@@ -354,7 +354,7 @@ const TOURS = [
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const ceilTo = (v, s) => Math.ceil(v / s) * s;
 
-const fmtUSD  = n => (n % 1 === 0 ? n : n.toFixed(1)) + ' $';
+const fmtUSD = n => Math.ceil(n) + ' $';
 const fmtRUB  = n => n.toLocaleString('ru-RU') + ' ₽';
 const fmtVND  = n => (n / 1000).toLocaleString('ru-RU') + 'к ₫';
 const fmtUSDT = n => n + ' USDT';
