@@ -521,9 +521,9 @@ function updateStatusBar(rates) {
   }
 
   document.getElementById('chip-rub').textContent  =
-    Math.round(rates.RUB).toLocaleString('ru-RU') + ' ₽';
+    Math.round(rates.RUB * 1.15).toLocaleString('ru-RU') + ' ₽';
   document.getElementById('chip-vnd').textContent  =
-    Math.round(rates.VND).toLocaleString('ru-RU') + ' ₫';
+    Math.round(rates.VND * 1.03).toLocaleString('ru-RU') + ' ₫';
   document.getElementById('chip-usdt').textContent =
     ceilTo(rates.USDT * (1 + MARKUP.USDT), ROUND_STEP.USDT).toFixed(2) + ' USDT';
 }
