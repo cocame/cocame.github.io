@@ -285,7 +285,7 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // КОНФИГУРАЦИЯ
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const MARKUP     = { RUB: 0.15,  VND: 0.03,   USDT: 0.01  };
+const MARKUP     = { RUB: 0.15,  VND: 0.03,   USDT: 0.00  };
 const ROUND_STEP = { RUB: 100,   VND: 100000,  USDT: 1     };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -332,8 +332,8 @@ const TOURS = [
       { type: 'price',  label: 'Ребёнок до 10', usd: 24 },
     ],
     tickets: [
-      { id: 'bana_adult',  label: 'Билет взрослый (>140 см)',          vnd_fixed: 1000000 },
-      { id: 'bana_senior', label: 'Билет пожилой (70+) / дет. 100–140', vnd_fixed: 800000  },
+      { id: 'bana_adult',  label: 'Взрослые и дети >140 см',  vnd_fixed: 1000000 },
+      { id: 'bana_senior', label: 'Дети 100–140 см / 70+',    vnd_fixed: 800000  },
     ],
   },
   {
@@ -343,8 +343,8 @@ const TOURS = [
       { type: 'price',  label: 'Ребёнок до 10', usd: 36 },
     ],
     tickets: [
-      { id: 'hs_adult', label: 'Билет взрослый (>140 см)',    vnd_fixed: 490000 },
-      { id: 'hs_child', label: 'Билет ребёнок 100–140 см',    vnd_fixed: 245000, note: '−50%' },
+      { id: 'hs_adult', label: 'Взрослые и дети >140 см', vnd_fixed: 500000 },
+      { id: 'hs_child', label: 'Дети 100–140 см',         vnd_fixed: 300000 },
     ],
   },
 ];
@@ -354,7 +354,7 @@ const TOURS = [
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const ceilTo = (v, s) => Math.ceil(v / s) * s;
 
-const fmtUSD  = n => (n % 1 === 0 ? n : n.toFixed(1)) + ' $';
+const fmtUSD = n => Math.ceil(n) + ' $';
 const fmtRUB  = n => n.toLocaleString('ru-RU') + ' ₽';
 const fmtVND  = n => n.toLocaleString('ru-RU') + ' ₫';
 const fmtUSDT = n => n + ' USDT';
@@ -484,7 +484,7 @@ function renderCards(rates, skeleton = false) {
     }
 
     return `
-      <div class="tour-card">
+      <div class="tour-card" data-idx="${TOURS.indexOf(t)}" style="cursor:pointer">
         <div class="tour-header">
           <div class="tour-icon">${t.icon}</div>
           <div class="tour-name">${t.name}</div>
@@ -532,8 +532,9 @@ function updateStatusBar(rates) {
 // INIT
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 (async () => {
-  renderCards(null, true); // скелетон
+  renderCards(null, true);
   const rates = await fetchRates();
+  currentRates = rates;
   updateStatusBar(rates);
   renderCards(rates, false);
 
