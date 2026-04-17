@@ -525,7 +525,7 @@ function updateStatusBar(rates) {
   document.getElementById('chip-vnd').textContent  =
     (ceilTo(rates.VND * (1 + MARKUP.VND),  ROUND_STEP.VND) / 1000).toLocaleString('ru-RU') + 'к ₫';
   document.getElementById('chip-usdt').textContent =
-    ceilTo(rates.USDT * (1 + MARKUP.USDT), ROUND_STEP.USDT).toFixed(2) + ' ₮';
+    ceilTo(rates.USDT * (1 + MARKUP.USDT), ROUND_STEP.USDT).toFixed(2) + ' USDT';
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
