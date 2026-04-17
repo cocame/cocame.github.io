@@ -125,7 +125,7 @@
     /* ── COLUMN HEADERS ── */
     .col-headers {
       display: grid;
-      grid-template-columns: 1.8fr 1fr 1.1fr 1.2fr 1fr;
+      grid-template-columns: 1.6fr 0.8fr 1fr 1.4fr 1fr;
       padding: 0 16px 6px;
       gap: 4px;
     }
@@ -174,7 +174,7 @@
 
     .price-row {
       display: grid;
-      grid-template-columns: 1.8fr 1fr 1.1fr 1.2fr 1fr;
+      grid-template-columns: 1.6fr 0.8fr 1fr 1.4fr 1fr;
       align-items: center;
       padding: 6px 0;
       border-bottom: 1px solid var(--border2);
@@ -247,7 +247,7 @@
     /* ── MOBILE ── */
     @media (max-width: 480px) {
       .price-row,
-      .col-headers { grid-template-columns: 1.6fr 1fr 1fr 1.1fr 0.9fr; }
+      .col-headers { grid-template-columns: 1.4fr 0.8fr 1fr 1.4fr 0.9fr; }
       .price-cell  { font-size: 10.5px; }
       .tour-name   { font-size: 14px; }
     }
@@ -285,7 +285,7 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // КОНФИГУРАЦИЯ
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const MARKUP     = { RUB: 0.15,  VND: 0.03,   USDT: 0.00  };
+const MARKUP     = { RUB: 0.15,  VND: 0.03,   USDT: 0.01  };
 const ROUND_STEP = { RUB: 100,   VND: 100000,  USDT: 1     };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -343,8 +343,8 @@ const TOURS = [
       { type: 'price',  label: 'Ребёнок до 10', usd: 36 },
     ],
     tickets: [
-      { id: 'hs_adult', label: 'Билет взрослый (>140 см)',    vnd_fixed: 500000 },
-      { id: 'hs_child', label: 'Билет ребёнок 100–140 см',    vnd_fixed: 300000, note: '−50%' },
+      { id: 'hs_adult', label: 'Билет взрослый (>140 см)',    vnd_fixed: 490000 },
+      { id: 'hs_child', label: 'Билет ребёнок 100–140 см',    vnd_fixed: 245000, note: '−50%' },
     ],
   },
 ];
@@ -354,9 +354,9 @@ const TOURS = [
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const ceilTo = (v, s) => Math.ceil(v / s) * s;
 
-const fmtUSD = n => Math.ceil(n) + ' $';
+const fmtUSD  = n => (n % 1 === 0 ? n : n.toFixed(1)) + ' $';
 const fmtRUB  = n => n.toLocaleString('ru-RU') + ' ₽';
-const fmtVND  = n => (n / 1000).toLocaleString('ru-RU') + 'к ₫';
+const fmtVND  = n => n.toLocaleString('ru-RU') + ' ₫';
 const fmtUSDT = n => n + ' USDT';
 
 function calcFromUSD(usd, R) {
@@ -523,7 +523,7 @@ function updateStatusBar(rates) {
   document.getElementById('chip-rub').textContent  =
     ceilTo(rates.RUB  * (1 + MARKUP.RUB),  ROUND_STEP.RUB).toLocaleString('ru-RU') + ' ₽';
   document.getElementById('chip-vnd').textContent  =
-    (ceilTo(rates.VND * (1 + MARKUP.VND),  ROUND_STEP.VND) / 1000).toLocaleString('ru-RU') + 'к ₫';
+    ceilTo(rates.VND * (1 + MARKUP.VND), ROUND_STEP.VND).toLocaleString('ru-RU') + ' ₫';
   document.getElementById('chip-usdt').textContent =
     ceilTo(rates.USDT * (1 + MARKUP.USDT), ROUND_STEP.USDT).toFixed(2) + ' USDT';
 }
