@@ -244,6 +244,92 @@
     footer a { color: #aaa09a; text-decoration: none; }
     footer a:hover { color: var(--muted); }
 
+
+    /* ── CALCULATOR ── */
+    .calc-toggle {
+      display: block;
+      width: calc(100% - 32px);
+      margin: 0 16px 12px;
+      padding: 7px 0;
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .calc-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .calc-block {
+      display: none;
+      padding: 10px 16px 14px;
+      border-top: 1px dashed var(--border);
+      background: #fafaf8;
+    }
+    .calc-block.open { display: block; }
+    .calc-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border2);
+    }
+    .calc-row:last-of-type { border-bottom: none; }
+    .calc-label { font-size: 11px; color: var(--muted); }
+    .calc-counter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .calc-btn {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--text);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .calc-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .calc-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      min-width: 20px;
+      text-align: center;
+    }
+    .calc-total {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+    }
+    .calc-total-label { color: var(--muted); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; }
+    .calc-total-usd  { color: var(--green); font-size: 15px; font-weight: 500; }
+    .calc-total-rest { color: var(--muted); font-size: 10px; margin-top: 3px; }
+    .calc-copy {
+      display: block;
+      width: 100%;
+      margin-top: 8px;
+      padding: 7px 0;
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #fff;
+      cursor: pointer;
+    }
+    .calc-copy:hover { opacity: .85; }
     /* ── MOBILE ── */
     @media (max-width: 480px) {
       .price-row,
@@ -528,6 +614,96 @@ function updateStatusBar(rates) {
     ceilTo(rates.USDT * (1 + MARKUP.USDT), ROUND_STEP.USDT).toFixed(2) + ' USDT';
 }
 
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// КАЛЬКУЛЯТОР
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function buildCalc(t, idx) {
+  const rows = t.rows.map((r, i) => `
+    <div class="calc-row">
+      <div class="calc-label">${r.label}</div>
+      <div class="calc-counter">
+        <button class="calc-btn" data-action="dec" data-tour="${idx}" data-row="${i}">−</button>
+        <div class="calc-num" id="cn-${idx}-${i}">0</div>
+        <button class="calc-btn" data-action="inc" data-tour="${idx}" data-row="${i}">+</button>
+      </div>
+    </div>`).join('');
+
+  const ticketRows = t.tickets ? t.tickets.map((tk, i) => `
+    <div class="calc-row">
+      <div class="calc-label" style="font-style:italic">${tk.label}</div>
+      <div class="calc-counter">
+        <button class="calc-btn" data-action="dec" data-tour="${idx}" data-ticket="${i}">−</button>
+        <div class="calc-num" id="ct-${idx}-${i}">0</div>
+        <button class="calc-btn" data-action="inc" data-tour="${idx}" data-ticket="${i}">+</button>
+      </div>
+    </div>`).join('') : '';
+
+  return `
+    <div class="calc-block" id="calc-${idx}">
+      ${rows}
+      ${ticketRows ? '<div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#bbb;font-family:DM Mono,monospace;padding-bottom:4px">Входные билеты</div>' + ticketRows : ''}
+      <div class="calc-total" id="calc-total-${idx}" style="display:none">
+        <div class="calc-total-label">Итого</div>
+        <div class="calc-total-usd" id="calc-usd-${idx}"></div>
+        <div class="calc-total-rest" id="calc-rest-${idx}"></div>
+        <button class="calc-copy" data-tour="${idx}">Скопировать расчёт</button>
+      </div>
+    </div>`;
+}
+
+const calcCounts = {};
+
+function updateCalc(idx) {
+  const t = TOURS[idx];
+  if (!t || !currentRates) return;
+  const R = currentRates;
+
+  let totalUSD = 0, totalRUB = 0, totalVND = 0, totalUSDT = 0;
+  let hasAny = false;
+  let lines = [];
+
+  t.rows.forEach((r, i) => {
+    const n = (calcCounts[idx] && calcCounts[idx]['r'+i]) || 0;
+    if (n === 0) return;
+    hasAny = true;
+    const p = calcFromUSD(r.usd, R);
+    totalUSD  += Math.ceil(r.usd) * n;
+    totalRUB  += p.rub * n;
+    totalVND  += p.vnd * n;
+    totalUSDT += p.usdt * n;
+    lines.push(r.label + ' x' + n + ': ' + Math.ceil(r.usd)*n + ' $');
+  });
+
+  if (t.tickets) {
+    t.tickets.forEach((tk, i) => {
+      const n = (calcCounts[idx] && calcCounts[idx]['t'+i]) || 0;
+      if (n === 0) return;
+      hasAny = true;
+      const p = calcFromVND(tk.vnd_fixed, R);
+      totalUSD  += p.usd * n;
+      totalRUB  += p.rub * n;
+      totalVND  += tk.vnd_fixed * n;
+      totalUSDT += p.usdt * n;
+      lines.push(tk.label + ' x' + n + ': ' + fmtVND(tk.vnd_fixed * n));
+    });
+  }
+
+  const totalEl = document.getElementById('calc-total-' + idx);
+  if (!hasAny) { totalEl.style.display = 'none'; return; }
+  totalEl.style.display = 'block';
+  document.getElementById('calc-usd-' + idx).textContent = Math.ceil(totalUSD) + ' $';
+  document.getElementById('calc-rest-' + idx).textContent =
+    fmtRUB(ceilTo(totalRUB, 100)) + ' / ' + fmtVND(ceilTo(totalVND, 100000)) + ' / ' + Math.ceil(totalUSDT) + ' USDT';
+
+  const copyBtn = totalEl.querySelector('.calc-copy');
+  copyBtn.dataset.lines = JSON.stringify(lines);
+  copyBtn.dataset.usd = Math.ceil(totalUSD);
+  copyBtn.dataset.rub = ceilTo(totalRUB, 100);
+  copyBtn.dataset.vnd = ceilTo(totalVND, 100000);
+  copyBtn.dataset.usdt = Math.ceil(totalUSDT);
+}
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // INIT
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -556,6 +732,43 @@ function updateStatusBar(rates) {
       });
     }
     navigator.clipboard.writeText(text.trim()).then(function() {
+      var el = document.getElementById('ct');
+      if (!el) { el = document.createElement('div'); el.id = 'ct'; el.style = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1917;color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .2s;z-index:9999;pointer-events:none'; el.textContent = '✓ Скопировано'; document.body.appendChild(el); }
+      el.style.opacity = '1'; clearTimeout(el._x); el._x = setTimeout(function(){el.style.opacity='0'},1800);
+    });
+  });
+  // Calc counter buttons
+  document.getElementById('price-list').addEventListener('click', function(e) {
+    const btn = e.target.closest('.calc-btn');
+    if (!btn) return;
+    e.stopPropagation();
+    const idx = +btn.dataset.tour;
+    if (!calcCounts[idx]) calcCounts[idx] = {};
+    const key = btn.dataset.row !== undefined ? 'r'+btn.dataset.row : 't'+btn.dataset.ticket;
+    const numEl = btn.dataset.row !== undefined
+      ? document.getElementById('cn-'+idx+'-'+btn.dataset.row)
+      : document.getElementById('ct-'+idx+'-'+btn.dataset.ticket);
+    let val = parseInt(numEl.textContent) || 0;
+    if (btn.dataset.action === 'inc') val++;
+    else if (val > 0) val--;
+    numEl.textContent = val;
+    calcCounts[idx][key] = val;
+    updateCalc(idx);
+  });
+
+  // Calc copy button
+  document.getElementById('price-list').addEventListener('click', function(e) {
+    const btn = e.target.closest('.calc-copy');
+    if (!btn) return;
+    e.stopPropagation();
+    const idx = +btn.dataset.tour;
+    const t = TOURS[idx];
+    const lines = JSON.parse(btn.dataset.lines || '[]');
+    let text = t.icon + ' ' + t.name + ' — расчёт группы\n──────────────\n';
+    lines.forEach(function(l) { text += l + '\n'; });
+    text += '──────────────\n';
+    text += 'Итого: ' + btn.dataset.usd + ' $ / ' + fmtRUB(+btn.dataset.rub) + ' / ' + fmtVND(+btn.dataset.vnd) + ' / ' + btn.dataset.usdt + ' USDT';
+    navigator.clipboard.writeText(text).then(function() {
       var el = document.getElementById('ct');
       if (!el) { el = document.createElement('div'); el.id = 'ct'; el.style = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1917;color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .2s;z-index:9999;pointer-events:none'; el.textContent = '✓ Скопировано'; document.body.appendChild(el); }
       el.style.opacity = '1'; clearTimeout(el._x); el._x = setTimeout(function(){el.style.opacity='0'},1800);
