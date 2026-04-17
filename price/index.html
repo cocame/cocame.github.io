@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UV Index</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px 40px;
+    background: #f0f2f5;
+  }
+
+  .main {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .card {
+    width: 100%;
+    background: #fff;
+    border-radius: 28px;
+    padding: 32px 24px 28px;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+
+  .city-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 2px;
+  }
+
+  .subtitle {
+    font-size: 11px;
+    color: #9aa0aa;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    margin-bottom: 28px;
+  }
+
+  .uv-big {
+    font-size: 96px;
+    font-weight: 900;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--uv-color, #ccc);
+    transition: color 0.5s;
+    margin-bottom: 6px;
+    min-height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .uv-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--uv-color, #ccc);
+    transition: color 0.5s;
+    margin-bottom: 24px;
+    min-height: 16px;
+  }
+
+  .row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 0;
+  }
+
+  .box {
+    width: 100%;
+    background: #f7f8fa;
+    border-radius: 16px;
+    padding: 14px 16px 12px;
+    text-align: left;
+  }
+
+  .box-label {
+    font-size: 10px;
+    color: #9aa0aa;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .box-value {
+    font-size: 28px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    min-height: 28px;
+    color: #1a1a2e;
+  }
+
+  .box-value.aqi-val {
+    color: var(--aqi-color, #1a1a2e);
+    transition: color 0.5s;
+  }
+
+  .geo-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 22px;
+    border-radius: 22px;
+    border: none;
+    background: #fff;
+    color: #3a3a5c;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transition: all 0.2s;
+  }
+
+  .geo-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-1px); }
+
+  .search-wrap { width: 100%; position: relative; }
+
+  .search-input {
+    width: 100%;
+    padding: 11px 16px;
+    border-radius: 22px;
+    border: none;
+    background: #fff;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    color: #1a1a2e;
+    outline: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .search-input::placeholder { color: #b0b8c4; }
+
+  .dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 10;
+    display: none;
+  }
+
+  .dropdown.open { display: block; }
+
+  .drop-item {
+    padding: 10px 16px;
+    font-size: 14px;
+    color: #1a1a2e;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .drop-item:hover { background: #f0f2f5; }
+
+  .updated {
+    font-size: 10px;
+    color: #b0b8c4;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 0.6; }
+  }
+  .loading .uv-big    { animation: pulse 1.2s ease-in-out infinite; }
+  .loading .box-value { animation: pulse 1.2s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<div class="main">
+  <div class="card loading" id="card">
+    <div class="city-name" id="cityName">Определение...</div>
+    <div class="subtitle">УФ · Температура · Воздух</div>
+    <div class="uv-big" id="uvNum">–</div>
+    <div class="uv-label" id="uvLabel">&nbsp;</div>
+    <div class="box" style="margin-bottom:10px">
+      <div class="box-label">Температура</div>
+      <div class="box-value" id="temp">–</div>
+    </div>
+    <div class="box">
+      <div class="box-label">Воздух AQI</div>
+      <div class="box-value aqi-val" id="aqiValue">–</div>
+    </div>
+  </div>
+
+  <button class="geo-btn" onclick="geoLocate()">📍 Моё местоположение</button>
+
+  <div class="search-wrap">
+    <input class="search-input" id="searchInput" type="text" placeholder="🔍 Найти город..." autocomplete="off"/>
+    <div class="dropdown" id="dropdown"></div>
+  </div>
+
+  <div class="updated" id="updated"></div>
+</div>
+
+<script>
+const CITIES = [
+  { name: 'Дананг',        lat: 16.047, lon: 108.206 },
+  { name: 'Хой Ан',        lat: 15.880, lon: 108.335 },
+  { name: 'Хюэ',           lat: 16.463, lon: 107.590 },
+  { name: 'Нячанг',        lat: 12.238, lon: 109.196 },
+  { name: 'Хошимин',       lat: 10.823, lon: 106.629 },
+  { name: 'Ханой',         lat: 21.027, lon: 105.834 },
+  { name: 'Далат',         lat: 11.940, lon: 108.458 },
+  { name: 'Фукуок',        lat: 10.227, lon: 103.964 },
+  { name: 'Муй Не',        lat: 10.933, lon: 108.286 },
+  { name: 'Халонг',        lat: 20.959, lon: 107.042 },
+  { name: 'Шапа',          lat: 22.336, lon: 103.844 },
+  { name: 'Нинь Бинь',     lat: 20.253, lon: 105.975 },
+  { name: 'Фан Тхьет',     lat: 10.929, lon: 108.102 },
+  { name: 'Вунг Тау',      lat: 10.346, lon: 107.084 },
+  { name: 'Кан Тхо',       lat: 10.045, lon: 105.748 },
+  { name: 'Куи Нён',       lat: 13.776, lon: 109.223 },
+  { name: 'Куанг Нгай',    lat: 15.120, lon: 108.792 },
+  { name: 'Буон Ма Тхуот', lat: 12.667, lon: 108.050 },
+  { name: 'Плейку',        lat: 13.983, lon: 108.000 },
+  { name: 'Кон Тум',       lat: 14.350, lon: 108.000 },
+  { name: 'Тхань Хоа',     lat: 19.808, lon: 105.776 },
+  { name: 'Винь',          lat: 18.680, lon: 105.681 },
+  { name: 'Донг Хой',      lat: 17.480, lon: 106.600 },
+  { name: 'Хай Фонг',      lat: 20.844, lon: 106.688 },
+  { name: 'Лао Кай',       lat: 22.485, lon: 103.975 },
+  { name: 'Диен Бьен Фу',  lat: 21.386, lon: 103.016 },
+  { name: 'Фан Ранг',      lat: 11.565, lon: 108.988 },
+  { name: 'Биен Хоа',      lat: 10.958, lon: 106.843 },
+  { name: 'Вьет Три',      lat: 21.399, lon: 105.438 },
+  { name: 'Ми Тхо',        lat: 10.360, lon: 106.362 },
+  { name: 'Камау',         lat: 9.177,  lon: 105.150 },
+  { name: 'Рать Жиа',      lat: 10.012, lon: 105.080 },
+  { name: 'Бен Тре',       lat: 10.243, lon: 106.375 },
+  { name: 'Ан Жанг',       lat: 10.388, lon: 105.435 },
+  { name: 'Тай Нинь',      lat: 11.310, lon: 106.100 },
+  { name: 'Ха Тинь',       lat: 18.342, lon: 105.906 },
+  { name: 'Нам Динь',      lat: 20.420, lon: 106.168 },
+  { name: 'Тхай Нгуен',    lat: 21.567, lon: 105.825 },
+  { name: 'Хоа Бинь',      lat: 20.813, lon: 105.338 },
+];
+
+function uvInfo(uv) {
+  if (uv <= 2)  return { label: 'Низкий',        color: '#22a55a' };
+  if (uv <= 5)  return { label: 'Умеренный',     color: '#c49a00' };
+  if (uv <= 7)  return { label: 'Высокий',       color: '#d4620a' };
+  if (uv <= 10) return { label: 'Очень высокий', color: '#c0392b' };
+  return             { label: 'Экстремальный',   color: '#7d3c98' };
+}
+
+function aqiColor(aqi) {
+  if (aqi <= 20)  return '#22a55a';
+  if (aqi <= 40)  return '#7ab230';
+  if (aqi <= 60)  return '#c49a00';
+  if (aqi <= 80)  return '#d4620a';
+  if (aqi <= 100) return '#c0392b';
+  return '#7d3c98';
+}
+
+let currentLat = null, currentLon = null, currentName = 'Дананг';
+
+async function loadByCoords(lat, lon, name) {
+  currentLat = lat; currentLon = lon; currentName = name;
+  document.getElementById('card').classList.add('loading');
+  document.getElementById('cityName').textContent = name;
+
+  try {
+    const wRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat +
+      '&longitude=' + lon + '&current=uv_index,temperature_2m&timezone=Asia%2FHo_Chi_Minh&forecast_days=1');
+    const w = await wRes.json();
+    const uv = Math.round(w.current.uv_index * 10) / 10;
+    const t  = Math.round(w.current.temperature_2m);
+    const uvI = uvInfo(uv);
+
+    document.documentElement.style.setProperty('--uv-color', uvI.color);
+    document.getElementById('uvNum').textContent   = uv;
+    document.getElementById('uvLabel').textContent = uvI.label;
+    document.getElementById('temp').textContent    = t + '°C';
+    document.getElementById('card').classList.remove('loading');
+
+    const now = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('updated').textContent = 'Обновлено ' + now + ' (UTC+7)';
+  } catch(e) {
+    document.getElementById('card').classList.remove('loading');
+    document.getElementById('uvLabel').textContent = 'Ошибка загрузки';
+  }
+
+  try {
+    const aRes = await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' + lat +
+      '&longitude=' + lon + '&current=european_aqi&timezone=Asia%2FHo_Chi_Minh');
+    const a = await aRes.json();
+    const aqi = a.current.european_aqi;
+    document.documentElement.style.setProperty('--aqi-color', aqiColor(aqi));
+    document.getElementById('aqiValue').textContent = aqi;
+  } catch(e) {
+    document.getElementById('aqiValue').textContent = '–';
+  }
+}
+
+function geoLocate() {
+  if (!navigator.geolocation) { loadByCoords(16.047, 108.206, 'Дананг'); return; }
+  document.getElementById('cityName').textContent = 'Определение...';
+  navigator.geolocation.getCurrentPosition(
+    pos => loadByCoords(pos.coords.latitude, pos.coords.longitude, 'Моё местоположение'),
+    ()  => loadByCoords(16.047, 108.206, 'Дананг')
+  );
+}
+
+const searchInput = document.getElementById('searchInput');
+const dropdown    = document.getElementById('dropdown');
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim().toLowerCase();
+  if (!q) { dropdown.classList.remove('open'); return; }
+  const results = CITIES.filter(c => c.name.toLowerCase().includes(q)).slice(0, 8);
+  if (!results.length) { dropdown.classList.remove('open'); return; }
+  dropdown.innerHTML = results.map(c =>
+    '<div class="drop-item" onclick="selectCity(\'' + c.name + '\',' + c.lat + ',' + c.lon + ')">' + c.name + '</div>'
+  ).join('');
+  dropdown.classList.add('open');
+});
+
+function selectCity(name, lat, lon) {
+  searchInput.value = '';
+  dropdown.classList.remove('open');
+  loadByCoords(lat, lon, name);
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) dropdown.classList.remove('open');
+});
+
+geoLocate();
+setInterval(() => {
+  if (currentLat) loadByCoords(currentLat, currentLon, currentName);
+}, 30 * 60 * 1000);
+</script>
+</body>
+</html>
