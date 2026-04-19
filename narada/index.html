@@ -314,6 +314,22 @@
     .calc-total-label { color: var(--muted); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; }
     .calc-total-usd  { color: var(--green); font-size: 15px; font-weight: 500; }
     .calc-total-rest { color: var(--muted); font-size: 10px; margin-top: 3px; }
+    .calc-currencies {
+      display: flex;
+      gap: 12px;
+      margin: 8px 0;
+      flex-wrap: wrap;
+    }
+    .calc-currencies label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .calc-currencies input { cursor: pointer; accent-color: var(--accent); }
     .calc-copy {
       display: block;
       width: 100%;
@@ -649,12 +665,38 @@ function buildCalc(t, idx) {
         <div class="calc-total-label">Итого</div>
         <div class="calc-total-usd" id="calc-usd-${idx}"></div>
         <div class="calc-total-rest" id="calc-rest-${idx}"></div>
+        <div class="calc-currencies">
+          <label><input type="checkbox" class="cur-check" data-tour="${idx}" value="usd" checked> USD</label>
+          <label><input type="checkbox" class="cur-check" data-tour="${idx}" value="rub"> RUB</label>
+          <label><input type="checkbox" class="cur-check" data-tour="${idx}" value="vnd"> VND</label>
+          <label><input type="checkbox" class="cur-check" data-tour="${idx}" value="usdt"> USDT</label>
+        </div>
+        <div class="calc-currencies">
+          <label><input type="checkbox" class="cur-check" data-tour="${idx}" value="usd" checked> USD</label>
+          <label><input type="checkbox" class="cur-check" data-tour="${idx}" value="rub"> RUB</label>
+          <label><input type="checkbox" class="cur-check" data-tour="${idx}" value="vnd"> VND</label>
+          <label><input type="checkbox" class="cur-check" data-tour="${idx}" value="usdt"> USDT</label>
+        </div>
         <button class="calc-copy" data-tour="${idx}">Скопировать расчёт</button>
       </div>
     </div>`;
 }
 
 const calcCounts = {};
+
+function getCurChecked(idx) {
+  const checks = document.querySelectorAll('.cur-check[data-tour="' + idx + '"]:checked');
+  return Array.from(checks).map(function(c) { return c.value; });
+}
+
+function formatPrice(usd, rub, vnd, usdt, curs) {
+  const parts = [];
+  if (curs.indexOf('usd')  >= 0) parts.push(Math.ceil(usd) + ' $');
+  if (curs.indexOf('rub')  >= 0) parts.push(fmtRUB(ceilTo(rub, 100)));
+  if (curs.indexOf('vnd')  >= 0) parts.push(fmtVND(ceilTo(vnd, 100000)));
+  if (curs.indexOf('usdt') >= 0) parts.push(Math.ceil(usdt) + ' USDT');
+  return parts.join(' / ');
+}
 
 function updateCalc(idx) {
   const t = TOURS[idx];
@@ -663,7 +705,8 @@ function updateCalc(idx) {
 
   let totalUSD = 0, totalRUB = 0, totalVND = 0, totalUSDT = 0;
   let hasAny = false;
-  let lines = [];
+  const rowData = [];
+  const ticketData = [];
 
   t.rows.forEach((r, i) => {
     const n = (calcCounts[idx] && calcCounts[idx]['r'+i]) || 0;
@@ -674,7 +717,7 @@ function updateCalc(idx) {
     totalRUB  += p.rub * n;
     totalVND  += p.vnd * n;
     totalUSDT += p.usdt * n;
-    lines.push(r.label + ' x' + n + ': ' + Math.ceil(r.usd)*n + ' $');
+    rowData.push({ label: r.label, n, usd: Math.ceil(r.usd)*n, rub: p.rub*n, vnd: p.vnd*n, usdt: p.usdt*n });
   });
 
   if (t.tickets) {
@@ -687,23 +730,27 @@ function updateCalc(idx) {
       totalRUB  += p.rub * n;
       totalVND  += tk.vnd_fixed * n;
       totalUSDT += p.usdt * n;
-      lines.push(tk.label + ' x' + n + ': ' + fmtVND(tk.vnd_fixed * n));
+      ticketData.push({ label: tk.label, n, usd: p.usd*n, rub: p.rub*n, vnd: tk.vnd_fixed*n, usdt: p.usdt*n });
     });
   }
 
   const totalEl = document.getElementById('calc-total-' + idx);
   if (!hasAny) { totalEl.style.display = 'none'; return; }
   totalEl.style.display = 'block';
-  document.getElementById('calc-usd-' + idx).textContent = Math.ceil(totalUSD) + ' $';
-  document.getElementById('calc-rest-' + idx).textContent =
-    fmtRUB(ceilTo(totalRUB, 100)) + ' / ' + fmtVND(ceilTo(totalVND, 100000)) + ' / ' + Math.ceil(totalUSDT) + ' USDT';
+
+  const curs = getCurChecked(idx);
+  const totalStr = formatPrice(totalUSD, totalRUB, totalVND, totalUSDT, curs);
+  document.getElementById('calc-usd-' + idx).textContent = totalStr || '—';
+  document.getElementById('calc-rest-' + idx).textContent = '';
 
   const copyBtn = totalEl.querySelector('.calc-copy');
-  copyBtn.dataset.lines = JSON.stringify(lines);
-  copyBtn.dataset.usd = Math.ceil(totalUSD);
-  copyBtn.dataset.rub = ceilTo(totalRUB, 100);
-  copyBtn.dataset.vnd = ceilTo(totalVND, 100000);
-  copyBtn.dataset.usdt = Math.ceil(totalUSDT);
+  copyBtn.dataset.rows = JSON.stringify(rowData);
+  copyBtn.dataset.tickets = JSON.stringify(ticketData);
+  copyBtn.dataset.usd = totalUSD;
+  copyBtn.dataset.rub = totalRUB;
+  copyBtn.dataset.vnd = totalVND;
+  copyBtn.dataset.usdt = totalUSDT;
+  copyBtn.dataset.tour = idx;
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -765,16 +812,38 @@ function updateCalc(idx) {
     e.stopPropagation();
     const idx = +btn.dataset.tour;
     const t = TOURS[idx];
-    const lines = JSON.parse(btn.dataset.lines || '[]');
-    let text = t.icon + ' ' + t.name + ' — расчёт группы\n──────────────\n';
-    lines.forEach(function(l) { text += l + '\n'; });
-    text += '──────────────\n';
-    text += 'Итого: ' + btn.dataset.usd + ' $ / ' + fmtRUB(+btn.dataset.rub) + ' / ' + fmtVND(+btn.dataset.vnd) + ' / ' + btn.dataset.usdt + ' USDT';
-    navigator.clipboard.writeText(text).then(function() {
+    const curs = getCurChecked(idx);
+    const rows = JSON.parse(btn.dataset.rows || '[]');
+    const tickets = JSON.parse(btn.dataset.tickets || '[]');
+    const totalUSD = +btn.dataset.usd;
+    const totalRUB = +btn.dataset.rub;
+    const totalVND = +btn.dataset.vnd;
+    const totalUSDT = +btn.dataset.usdt;
+
+    let text = t.icon + ' ' + t.name + '\n\n';
+    rows.forEach(function(r) {
+      text += r.label + ' × ' + r.n + ' — ' + formatPrice(r.usd, r.rub, r.vnd, r.usdt, curs) + '\n';
+    });
+    if (tickets.length) {
+      text += '\nВходные билеты:\n';
+      tickets.forEach(function(tk) {
+        text += tk.label + ' × ' + tk.n + ' — ' + formatPrice(tk.usd, tk.rub, tk.vnd, tk.usdt, curs) + '\n';
+      });
+    }
+    text += '\nИтого: ' + formatPrice(totalUSD, totalRUB, totalVND, totalUSDT, curs);
+
+    navigator.clipboard.writeText(text.trim()).then(function() {
       var el = document.getElementById('ct');
       if (!el) { el = document.createElement('div'); el.id = 'ct'; el.style = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1917;color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .2s;z-index:9999;pointer-events:none'; el.textContent = '✓ Скопировано'; document.body.appendChild(el); }
       el.style.opacity = '1'; clearTimeout(el._x); el._x = setTimeout(function(){el.style.opacity='0'},1800);
     });
+  });
+
+  // Currency checkbox change
+  document.getElementById('price-list').addEventListener('change', function(e) {
+    const cb = e.target.closest('.cur-check');
+    if (!cb) return;
+    updateCalc(+cb.dataset.tour);
   });
 })();
 </script>
