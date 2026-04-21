@@ -237,9 +237,12 @@ function normalizeRoute(str){ const s=str.toLowerCase().trim(); for(const [r,a] 
 let allBookings=[], currentFilter='upcoming', editingId=null, currentTab='manual';
 window.onload=function(){ loadBookings(); };
 function loadBookings(){
-  fetch(SCRIPT_URL+'?action=getBookings')
-    .then(r=>r.json()).then(data=>{ allBookings=data||[]; renderBookings(); updateStats(); })
-    .catch(()=>{ document.getElementById('bookingsList').innerHTML='<div class="loading" style="color:var(--red)">Ошибка загрузки</div>'; });
+  const cb = 'cb_' + Date.now();
+  window[cb] = function(data){ allBookings=data||[]; renderBookings(); updateStats(); delete window[cb]; document.getElementById('jsonp_'+cb) && document.getElementById('jsonp_'+cb).remove(); };
+  const s = document.createElement('script');
+  s.id = 'jsonp_'+cb;
+  s.src = SCRIPT_URL+'?action=getBookings&callback='+cb;
+  document.head.appendChild(s);
 }
 function today(){ return new Date().toISOString().split('T')[0]; }
 function tomorrow(){ const d=new Date(); d.setDate(d.getDate()+1); return d.toISOString().split('T')[0]; }
