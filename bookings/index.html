@@ -2,9 +2,427 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Narada Bookings</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f1; --surface: #ffffff; --surface2: #f0efe9;
+    --border: #e0ddd5; --accent: #b5893a; --accent2: #c9a050;
+    --text: #1a1a1a; --text2: #666; --text3: #aaa;
+    --green: #2e8b57; --red: #c0392b; --blue: #2972b8; --purple: #7c5cbf;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Manrope', sans-serif; font-weight: 400; min-height: 100vh; }
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: 3px; }
+  .logo span { color: var(--text3); font-size: 12px; font-weight: 400; letter-spacing: 2px; margin-left: 10px; }
+  .header-stats { display: flex; gap: 24px; }
+  .stat { text-align: right; }
+  .stat-val { font-size: 18px; color: var(--accent); font-weight: 600; }
+  .stat-label { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+  .controls { padding: 14px 24px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .btn { padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-ghost.active { border-color: var(--accent); color: var(--accent); background: rgba(181,137,58,0.07); }
+  .filter-group { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+  .filter-select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 7px 12px; border-radius: 6px; font-family: 'Manrope', sans-serif; font-size: 13px; cursor: pointer; }
+  .list { padding: 16px 24px 40px; }
+  .date-group { margin-bottom: 24px; }
+  .date-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding: 8px 0; }
+  .date-title { font-size: 14px; font-weight: 600; color: var(--accent); }
+  .date-line { flex: 1; height: 1px; background: var(--border); }
+  .date-count { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; }
+  .booking-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; transition: box-shadow 0.2s; }
+  .booking-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .booking-card.cancelled { opacity: 0.5; }
+  .card-main { display: grid; grid-template-columns: 1.5fr 0.7fr 1.5fr 1.5fr 1fr auto auto; gap: 10px; padding: 14px 16px; align-items: center; cursor: pointer; }
+  .card-route { font-weight: 600; font-size: 14px; }
+  .card-pax { font-size: 13px; color: var(--text2); }
+  .card-contact { font-size: 13px; }
+  .card-hotel { font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-amount { font-size: 13px; }
+  .card-commission { font-size: 13px; color: var(--accent); font-weight: 700; text-align: right; white-space: nowrap; }
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+  .badge-paid { background: rgba(46,139,87,0.1); color: var(--green); }
+  .badge-unpaid { background: rgba(192,57,43,0.08); color: var(--red); }
+  .badge-refund { background: rgba(124,92,191,0.1); color: var(--purple); }
+  .badge-done { background: rgba(41,114,184,0.1); color: var(--blue); }
+  .badge-wait { background: rgba(181,137,58,0.1); color: var(--accent); }
+  .badge-cancel { background: rgba(150,150,150,0.1); color: var(--text3); }
+  .badge-waiting { background: rgba(124,92,191,0.1); color: var(--purple); }
+  .card-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .action-btn { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 15px; padding: 4px; border-radius: 4px; transition: color 0.2s; line-height: 1; }
+  .action-btn:hover { color: var(--accent); }
+  .card-expanded { display: none; border-top: 1px solid var(--border); padding: 16px; background: var(--surface2); }
+  .card-expanded.open { display: block; }
+  .expand-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .expand-item label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px; font-weight: 500; }
+  .expand-item span { font-size: 13px; }
+  .notes-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .notes-row label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px; font-weight: 500; }
+  .status-row { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .status-btn { padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-family: 'Manrope', sans-serif; font-size: 12px; color: var(--text2); transition: all 0.15s; font-weight: 500; }
+  .status-btn.active-paid { background: rgba(46,139,87,0.08); color: var(--green); border-color: var(--green); }
+  .status-btn.active-refund { background: rgba(124,92,191,0.08); color: var(--purple); border-color: var(--purple); }
+  .status-btn.active-done { background: rgba(41,114,184,0.08); color: var(--blue); border-color: var(--blue); }
+  .status-btn.active-cancel { background: rgba(150,150,150,0.08); color: var(--text3); border-color: var(--text3); }
+  .status-btn.active-waiting { background: rgba(124,92,191,0.08); color: var(--purple); border-color: var(--purple); }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 680px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
+  .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  .modal-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 22px; line-height: 1; padding: 4px; }
+  .modal-body { padding: 20px 24px; }
+  .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .tab { padding: 8px 20px; background: none; border: none; cursor: pointer; font-family: 'Manrope', sans-serif; font-size: 13px; color: var(--text3); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; font-weight: 500; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; font-weight: 500; }
+  .form-group input, .form-group select, .form-group textarea { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: 6px; font-family: 'Manrope', sans-serif; font-size: 13px; transition: border-color 0.2s; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); }
+  .form-group textarea { resize: vertical; min-height: 60px; }
+  .pax-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .pax-label { font-size: 10px; color: var(--text3); margin-bottom: 3px; font-weight: 500; }
+  .paste-area { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; min-height: 120px; width: 100%; font-family: 'Manrope', sans-serif; font-size: 13px; color: var(--text); resize: vertical; }
+  .parse-result { margin-top: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-size: 12px; color: var(--text2); display: none; }
+  .parse-result.show { display: block; }
+  .commission-preview { margin-top: 14px; padding: 12px 16px; background: rgba(181,137,58,0.05); border: 1px solid rgba(181,137,58,0.2); border-radius: 8px; display: flex; gap: 24px; }
+  .commission-preview .cv { font-size: 18px; color: var(--accent); font-weight: 600; }
+  .commission-preview .cl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
+  .loading { text-align: center; padding: 40px; color: var(--text3); font-size: 13px; }
+</style>
 </head>
 <body>
-<h1>test</h1>
+<div class="header">
+  <div class="logo">NARADA <span>BOOKINGS</span></div>
+  <div class="header-stats">
+    <div class="stat"><div class="stat-val" id="todayCount">—</div><div class="stat-label">Сегодня</div></div>
+    <div class="stat"><div class="stat-val" id="tomorrowCount">—</div><div class="stat-label">Завтра</div></div>
+    <div class="stat"><div class="stat-val" id="totalEarn">—</div><div class="stat-label">Комиссия за месяц</div></div>
+  </div>
+</div>
+<div class="controls">
+  <button class="btn btn-primary" onclick="openModal()">+ Добавить</button>
+  <button class="btn btn-ghost active" id="btnUpcoming" onclick="setFilter('upcoming')">Предстоящие</button>
+  <button class="btn btn-ghost" id="btnWaiting" onclick="setFilter('waiting')">Ждут</button>
+  <button class="btn btn-ghost" id="btnAll" onclick="setFilter('all')">Все</button>
+  <button class="btn btn-ghost" id="btnPast" onclick="setFilter('past')">История</button>
+  <div class="filter-group">
+    <select class="filter-select" id="filterRoute" onchange="renderBookings()">
+      <option value="">Все маршруты</option>
+      <option>ХЮЭ</option><option>ХОЙАН</option><option>ОСТРОВА ЧАМ</option>
+      <option>ДАНАНГ</option><option>БА НА ХИЛЛС</option><option>HOT SPRINGS</option>
+    </select>
+    <input type="date" class="filter-select" id="filterDate" onchange="renderBookings()">
+    <button class="btn btn-ghost" onclick="clearFilters()">✕</button>
+  </div>
+</div>
+<div class="list" id="bookingsList"><div class="loading">Загрузка...</div></div>
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Новое бронирование</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('manual')" id="tabManual">Вручную</button>
+        <button class="tab" onclick="switchTab('paste')" id="tabPaste">Вставить текст</button>
+      </div>
+      <div id="panelManual">
+        <div class="form-grid">
+          <div class="form-group"><label>Дата поездки</label><input type="date" id="fDate"></div>
+          <div class="form-group"><label>Маршрут</label>
+            <select id="fRoute" onchange="updateCommissionPreview()">
+              <option value="">— выбрать —</option>
+              <option>ХЮЭ</option><option>ХОЙАН</option><option>ОСТРОВА ЧАМ</option>
+              <option>ДАНАНГ</option><option>БА НА ХИЛЛС</option><option>HOT SPRINGS</option>
+            </select>
+          </div>
+          <div class="form-group full"><label>Количество человек</label>
+            <div class="pax-grid">
+              <div><div class="pax-label">Взрослые (10+)</div><input type="number" id="fAdults" min="0" value="1" onchange="updateCommissionPreview()"></div>
+              <div><div class="pax-label">Дети 3-10 лет</div><input type="number" id="fChildren" min="0" value="0" onchange="updateCommissionPreview()"></div>
+              <div><div class="pax-label">Дети до 3 лет</div><input type="number" id="fInfants" min="0" value="0"></div>
+            </div>
+          </div>
+          <div class="form-group full"><label>Контакт</label><input type="text" id="fContact" placeholder="Иван, +79001234567"></div>
+          <div class="form-group full"><label>Отель (название и номер комнаты)</label><input type="text" id="fHotel" placeholder="Tourane Hotel, комната 204"></div>
+          <div class="form-group"><label>Валюта</label>
+            <select id="fCurrency"><option>VND</option><option>USD $</option><option>RUB</option><option>USDT</option></select>
+          </div>
+          <div class="form-group"><label>Способ оплаты</label>
+            <select id="fPayMethod"><option>Наличные</option><option>Перевод</option><option>USDT</option></select>
+          </div>
+          <div class="form-group full"><label>Сумма оплаты</label><input type="text" id="fAmount" placeholder="4 300 000"></div>
+          <div class="form-group full"><label>Статус оплаты</label>
+            <select id="fPayStatus">
+              <option value="unpaid">Не оплачено</option>
+              <option value="paid">Оплачено</option>
+              <option value="refund">Возврат</option>
+            </select>
+          </div>
+          <div class="form-group full"><label>Примечание</label><textarea id="fNotes" placeholder="Любые заметки..."></textarea></div>
+        </div>
+        <div class="commission-preview">
+          <div><div class="cv" id="previewCommission">$0</div><div class="cl">Ваша комиссия</div></div>
+          <div><div class="cv" id="previewPax">0 чел.</div><div class="cl">Состав группы</div></div>
+        </div>
+      </div>
+      <div id="panelPaste" style="display:none">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Вставьте сообщение клиента.</p>
+        <textarea class="paste-area" id="pasteText" placeholder="1. Куда экскурсия&#10;2. Дата поездки&#10;3. Количество человек&#10;4. Контакт&#10;5. Отель&#10;6. Оплата&#10;7. Примечание"></textarea>
+        <button class="btn btn-ghost" style="margin-top:10px;" onclick="parseText()">Разобрать</button>
+        <div class="parse-result" id="parseResult"></div>
+        <div id="parsedFormContainer" style="display:none;margin-top:16px;">
+          <div class="form-grid">
+            <div class="form-group"><label>Дата поездки</label><input type="date" id="pfDate"></div>
+            <div class="form-group"><label>Маршрут</label>
+              <select id="pfRoute" onchange="updateCommissionPreview()">
+                <option value="">— выбрать —</option>
+                <option>ХЮЭ</option><option>ХОЙАН</option><option>ОСТРОВА ЧАМ</option>
+                <option>ДАНАНГ</option><option>БА НА ХИЛЛС</option><option>HOT SPRINGS</option>
+              </select>
+            </div>
+            <div class="form-group full"><label>Количество человек</label>
+              <div class="pax-grid">
+                <div><div class="pax-label">Взрослые (10+)</div><input type="number" id="pfAdults" min="0" value="1" onchange="updateCommissionPreview()"></div>
+                <div><div class="pax-label">Дети 3-10 лет</div><input type="number" id="pfChildren" min="0" value="0" onchange="updateCommissionPreview()"></div>
+                <div><div class="pax-label">Дети до 3 лет</div><input type="number" id="pfInfants" min="0" value="0"></div>
+              </div>
+            </div>
+            <div class="form-group full"><label>Контакт</label><input type="text" id="pfContact"></div>
+            <div class="form-group full"><label>Отель</label><input type="text" id="pfHotel"></div>
+            <div class="form-group"><label>Валюта</label>
+              <select id="pfCurrency"><option>VND</option><option>USD $</option><option>RUB</option><option>USDT</option></select>
+            </div>
+            <div class="form-group"><label>Способ оплаты</label>
+              <select id="pfPayMethod"><option>Наличные</option><option>Перевод</option><option>USDT</option></select>
+            </div>
+            <div class="form-group full"><label>Сумма оплаты</label><input type="text" id="pfAmount"></div>
+            <div class="form-group full"><label>Примечание</label><textarea id="pfNotes"></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="saveBooking()" id="saveBtn">Сохранить</button>
+    </div>
+  </div>
+</div>
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4AP9eRBrmH-NKi27CH4nhDPF1WfDrXYH90TJhVqGBn0I1ROqN18KW4JlrpgxzEAtI_w/exec';
+const ROUTES = {
+  'ХЮЭ':{commission:9,emoji:'⛩'},'ХОЙАН':{commission:9,emoji:'🏮'},
+  'ОСТРОВА ЧАМ':{commission:6,emoji:'🛥'},'ДАНАНГ':{commission:7,emoji:'⛵️'},
+  'БА НА ХИЛЛС':{commission:5,emoji:'🗿'},'HOT SPRINGS':{commission:7,emoji:'💎'}
+};
+const ROUTE_ALIASES = {
+  'ХЮЭ':['хюэ','хуэ','hue'],'ХОЙАН':['хойан','хаян','хой ан','хоян','hoian','hoi an'],
+  'ОСТРОВА ЧАМ':['острова чам','чам','cham'],'ДАНАНГ':['дананг','да нанг','danang','da nang'],
+  'БА НА ХИЛЛС':['ба на хиллс','банахиллс','бана хиллс','ба на','ba na hills','bana','banahills'],
+  'HOT SPRINGS':['hot springs','хот спрингс','горячие источники']
+};
+function normalizeRoute(str){ const s=str.toLowerCase().trim(); for(const [r,a] of Object.entries(ROUTE_ALIASES)){ if(a.some(x=>s.includes(x))) return r; } return str.toUpperCase(); }
+let allBookings=[], currentFilter='upcoming', editingId=null, currentTab='manual';
+window.onload=function(){ loadBookings(); };
+function loadBookings(){
+  fetch(SCRIPT_URL+'?action=getBookings')
+    .then(r=>r.json()).then(data=>{ allBookings=data||[]; renderBookings(); updateStats(); })
+    .catch(()=>{ document.getElementById('bookingsList').innerHTML='<div class="loading" style="color:var(--red)">Ошибка загрузки</div>'; });
+}
+function today(){ return new Date().toISOString().split('T')[0]; }
+function tomorrow(){ const d=new Date(); d.setDate(d.getDate()+1); return d.toISOString().split('T')[0]; }
+function setFilter(f){
+  currentFilter=f;
+  ['Upcoming','Waiting','All','Past'].forEach(n=>document.getElementById('btn'+n).classList.remove('active'));
+  document.getElementById('btn'+f.charAt(0).toUpperCase()+f.slice(1)).classList.add('active');
+  renderBookings();
+}
+function clearFilters(){ document.getElementById('filterRoute').value=''; document.getElementById('filterDate').value=''; renderBookings(); }
+function renderBookings(){
+  const routeF=document.getElementById('filterRoute').value;
+  const dateF=document.getElementById('filterDate').value;
+  const tod=today();
+  let filtered=allBookings.filter(b=>{
+    if(routeF&&b.route!==routeF) return false;
+    if(dateF&&b.date!==dateF) return false;
+    if(currentFilter==='upcoming') return b.date&&b.date>=tod&&b.tripStatus!=='cancelled'&&b.tripStatus!=='waiting_date';
+    if(currentFilter==='waiting') return b.tripStatus==='waiting_date';
+    if(currentFilter==='past') return (b.date&&b.date<tod)||b.tripStatus==='done'||b.tripStatus==='cancelled';
+    return true;
+  });
+  filtered.sort((a,b)=>{ if(!a.date&&!b.date) return 0; if(!a.date) return 1; if(!b.date) return -1; return a.date.localeCompare(b.date); });
+  if(!filtered.length){ document.getElementById('bookingsList').innerHTML='<div class="empty-state"><div class="big">🗺</div><p>Нет бронирований</p></div>'; return; }
+  if(currentFilter==='waiting'){
+    let html='<div class="date-group"><div class="date-header"><div class="date-title">Ждут даты</div><div class="date-line"></div><div class="date-count">'+filtered.length+' '+pluralBooking(filtered.length)+'</div></div>';
+    filtered.forEach(b=>{ html+=renderCard(b); }); html+='</div>';
+    document.getElementById('bookingsList').innerHTML=html; return;
+  }
+  const groups={};
+  filtered.forEach(b=>{ const d=b.date||'—'; if(!groups[d]) groups[d]=[]; groups[d].push(b); });
+  let html='';
+  Object.keys(groups).sort().forEach(date=>{
+    const count=groups[date].length;
+    html+=`<div class="date-group"><div class="date-header"><div class="date-title">${formatDateLabel(date)}</div><div class="date-line"></div><div class="date-count">${count} ${pluralBooking(count)}</div></div>`;
+    groups[date].forEach(b=>{ html+=renderCard(b); }); html+='</div>';
+  });
+  document.getElementById('bookingsList').innerHTML=html;
+}
+function renderCard(b){
+  const r=ROUTES[b.route]||{emoji:'📍'};
+  const payBadge=b.payStatus==='paid'?'<span class="badge badge-paid">Оплачено</span>':b.payStatus==='refund'?'<span class="badge badge-refund">Возврат</span>':'<span class="badge badge-unpaid">Не оплачено</span>';
+  const tripBadge=b.tripStatus==='done'?'<span class="badge badge-done">Съездил</span>':b.tripStatus==='cancelled'?'<span class="badge badge-cancel">Отменён</span>':b.tripStatus==='waiting_date'?'<span class="badge badge-waiting">Ждёт</span>':'<span class="badge badge-wait">Ожидает</span>';
+  const paxParts=[]; if(b.adults>0) paxParts.push(b.adults+' взр'); if(b.children>0) paxParts.push(b.children+' дет'); if(b.infants>0) paxParts.push(b.infants+' мал');
+  const cancelClass=b.tripStatus==='cancelled'?' cancelled':'';
+  const comm=b.payStatus==='paid'?'$'+(b.commission||0):'';
+  return '<div class="booking-card'+cancelClass+'" id="card-'+b.id+'">'
+    +'<div class="card-main" onclick="toggleCard(''+b.id+'')">'
+    +'<div class="card-route">'+r.emoji+b.route+'</div>'
+    +'<div class="card-pax">'+(paxParts.join('+')||'—')+'</div>'
+    +'<div class="card-contact">'+(b.contact||'—')+'</div>'
+    +'<div class="card-hotel">'+(b.hotel||'—')+'</div>'
+    +'<div class="card-amount">'+(b.totalAmount||'—')+'</div>'
+    +'<div class="card-actions">'+payBadge+' '+tripBadge
+    +'<button class="action-btn" onclick="event.stopPropagation();editBooking(''+b.id+'')">✏️</button>'
+    +'<button class="action-btn" onclick="event.stopPropagation();deleteBooking(''+b.id+'')">🗑</button>'
+    +'</div>'
+    +'<div class="card-commission">'+comm+'</div>'
+    +'</div>'
+    +'<div class="card-expanded" id="exp-'+b.id+'">'
+    +'<div class="expand-grid">'
+    +'<div class="expand-item"><label>Контакт</label><span>'+(b.contact||'—')+'</span></div>'
+    +'<div class="expand-item"><label>Отель</label><span>'+(b.hotel||'—')+'</span></div>'
+    +'<div class="expand-item"><label>Валюта</label><span>'+(b.currency||'—')+'</span></div>'
+    +'<div class="expand-item"><label>Способ оплаты</label><span>'+(b.payMethod||'—')+'</span></div>'
+    +'<div class="expand-item"><label>Сумма оплаты</label><span>'+(b.totalAmount||'—')+'</span></div>'
+    +'<div class="expand-item"><label>Комиссия</label><span>'+(b.payStatus==='paid'?'$'+(b.commission||0):'—')+'</span></div>'
+    +'</div>'
+    +(b.notes?'<div class="notes-row"><label>Примечание</label><span>'+b.notes+'</span></div>':'')
+    +'<div class="status-row">'
+    +'<button class="status-btn '+(b.payStatus==='paid'?'active-paid':'')+'" onclick="togglePayStatus(''+b.id+'','paid')">Оплачено</button>'
+    +'<button class="status-btn '+(b.payStatus==='refund'?'active-refund':'')+'" onclick="togglePayStatus(''+b.id+'','refund')">Возврат</button>'
+    +'<button class="status-btn '+(b.tripStatus==='done'?'active-done':'')+'" onclick="setTripStatus(''+b.id+'','done')">Съездил</button>'
+    +'<button class="status-btn '+(b.tripStatus==='cancelled'?'active-cancel':'')+'" onclick="setTripStatus(''+b.id+'','cancelled')">Отменён</button>'
+    +'<button class="status-btn '+(b.tripStatus==='waiting_date'?'active-waiting':'')+'" onclick="setTripStatus(''+b.id+'','waiting_date')">Ждёт даты</button>'
+    +'<button class="status-btn" onclick="setTripStatus(''+b.id+'','waiting')">Ожидает</button>'
+    +'</div></div></div>';
+}
+function toggleCard(id){ document.getElementById('exp-'+id).classList.toggle('open'); }
+function updateStats(){
+  const tod=today(),tom=tomorrow(),nowMonth=new Date().getMonth(),nowYear=new Date().getFullYear();
+  const todayBk=allBookings.filter(b=>b.date===tod&&b.tripStatus!=='cancelled'&&b.tripStatus!=='waiting_date').length;
+  const tomBk=allBookings.filter(b=>b.date===tom&&b.tripStatus!=='cancelled'&&b.tripStatus!=='waiting_date').length;
+  let earnMonth=0;
+  allBookings.forEach(b=>{ if(b.payStatus==='paid'&&b.date){ const c=parseInt(b.commission)||0; const bd=new Date(b.date+'T00:00:00'); if(bd.getMonth()===nowMonth&&bd.getFullYear()===nowYear) earnMonth+=c; } });
+  document.getElementById('todayCount').textContent=todayBk;
+  document.getElementById('tomorrowCount').textContent=tomBk;
+  document.getElementById('totalEarn').textContent='$'+earnMonth;
+}
+function calcCommission(route,adults,children){ const rate=(ROUTES[route]||{commission:0}).commission; return Math.round(adults*rate+children*rate*0.5); }
+function updateCommissionPreview(){
+  const p=currentTab==='manual'?'f':'pf';
+  const route=document.getElementById(p+'Route').value;
+  const adults=parseInt(document.getElementById(p+'Adults').value)||0;
+  const children=parseInt(document.getElementById(p+'Children').value)||0;
+  const infants=parseInt(document.getElementById(p+'Infants').value)||0;
+  document.getElementById('previewCommission').textContent='$'+calcCommission(route,adults,children);
+  document.getElementById('previewPax').textContent=(adults+children+infants)+' чел.';
+}
+function openModal(){ editingId=null; document.getElementById('modalTitle').textContent='Новое бронирование'; clearForm(); document.getElementById('modalOverlay').classList.add('open'); }
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+function editBooking(id){
+  const b=allBookings.find(x=>x.id==id); if(!b) return;
+  editingId=id; document.getElementById('modalTitle').textContent='Редактировать'; switchTab('manual');
+  document.getElementById('fDate').value=b.date||''; document.getElementById('fRoute').value=b.route||'';
+  document.getElementById('fAdults').value=b.adults||0; document.getElementById('fChildren').value=b.children||0;
+  document.getElementById('fInfants').value=b.infants||0; document.getElementById('fContact').value=b.contact||'';
+  document.getElementById('fHotel').value=b.hotel||''; document.getElementById('fCurrency').value=b.currency||'VND';
+  document.getElementById('fPayMethod').value=b.payMethod||'Наличные'; document.getElementById('fAmount').value=b.totalAmount||'';
+  document.getElementById('fPayStatus').value=b.payStatus||'unpaid'; document.getElementById('fNotes').value=b.notes||'';
+  updateCommissionPreview(); document.getElementById('modalOverlay').classList.add('open');
+}
+function clearForm(){
+  ['fDate','fContact','fHotel','fAmount','fNotes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fRoute').value=''; document.getElementById('fAdults').value=1;
+  document.getElementById('fChildren').value=0; document.getElementById('fInfants').value=0;
+  document.getElementById('fCurrency').value='VND'; document.getElementById('fPayMethod').value='Наличные';
+  document.getElementById('fPayStatus').value='unpaid'; document.getElementById('pasteText').value='';
+  document.getElementById('parseResult').classList.remove('show'); document.getElementById('parsedFormContainer').style.display='none';
+  updateCommissionPreview();
+}
+function switchTab(tab){
+  currentTab=tab;
+  document.getElementById('tabManual').classList.toggle('active',tab==='manual');
+  document.getElementById('tabPaste').classList.toggle('active',tab==='paste');
+  document.getElementById('panelManual').style.display=tab==='manual'?'':'none';
+  document.getElementById('panelPaste').style.display=tab==='paste'?'':'none';
+}
+function getFormData(){
+  const p=currentTab==='manual'?'f':'pf';
+  return { id:editingId, date:document.getElementById(p+'Date').value, route:document.getElementById(p+'Route').value,
+    adults:parseInt(document.getElementById(p+'Adults').value)||0, children:parseInt(document.getElementById(p+'Children').value)||0,
+    infants:parseInt(document.getElementById(p+'Infants').value)||0, contact:document.getElementById(p+'Contact').value,
+    hotel:document.getElementById(p+'Hotel').value, currency:document.getElementById(p+'Currency').value,
+    payMethod:document.getElementById(p+'PayMethod').value, totalAmount:document.getElementById(p+'Amount').value,
+    payStatus:currentTab==='manual'?document.getElementById('fPayStatus').value:'unpaid',
+    tripStatus:'waiting', notes:document.getElementById(p+'Notes').value };
+}
+function saveBooking(){
+  const data=getFormData();
+  if(!data.route){ alert('Укажите маршрут'); return; }
+  document.getElementById('saveBtn').textContent='Сохранение...'; document.getElementById('saveBtn').disabled=true;
+  const action=editingId?'updateBooking':'addBooking';
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action,...data})})
+    .then(r=>r.json())
+    .then(()=>{ closeModal(); clearForm(); document.getElementById('saveBtn').textContent='Сохранить'; document.getElementById('saveBtn').disabled=false; loadBookings(); })
+    .catch(err=>{ alert('Ошибка: '+err.message); document.getElementById('saveBtn').textContent='Сохранить'; document.getElementById('saveBtn').disabled=false; });
+}
+function deleteBooking(id){ if(!confirm('Удалить?')) return; fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'deleteBooking',id})}).then(()=>loadBookings()); }
+function togglePayStatus(id,status){ const b=allBookings.find(x=>x.id==id); if(!b) return; b.payStatus=b.payStatus===status?'unpaid':status; fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateBooking',...b})}).then(()=>loadBookings()); }
+function setTripStatus(id,status){ const b=allBookings.find(x=>x.id==id); if(!b) return; b.tripStatus=status; fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateBooking',...b})}).then(()=>loadBookings()); }
+function parseText(){
+  const text=document.getElementById('pasteText').value; if(!text.trim()) return;
+  const result={};
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  lines.forEach(line=>{
+    if(line.match(/^1[.)]/i)){ const val=line.replace(/^1[.)]\s*/,''); result.route=normalizeRoute(val); const dm=val.match(/(\d{1,2})[.\/-](\d{1,2})[.\/-]?(\d{2,4})?/); if(dm){ const day=dm[1].padStart(2,'0'),mon=dm[2].padStart(2,'0'),year=dm[3]?(dm[3].length===2?'20'+dm[3]:dm[3]):new Date().getFullYear(); result.date=year+'-'+mon+'-'+day; } }
+    if(line.match(/^2[.)]/i)){ const dm=line.match(/(\d{1,2})[.\/-](\d{1,2})[.\/-]?(\d{2,4})?/); if(dm){ const day=dm[1].padStart(2,'0'),mon=dm[2].padStart(2,'0'),year=dm[3]?(dm[3].length===2?'20'+dm[3]:dm[3]):new Date().getFullYear(); result.date=year+'-'+mon+'-'+day; } }
+    if(line.match(/^3[.)]/i)){ const val=line.replace(/^3[.)]\s*/,''); const a=val.match(/(\d+)\s*(взрос|adult)/i),c=val.match(/(\d+)\s*(дет|ребён|child)/i); if(a) result.adults=parseInt(a[1]); if(c) result.children=parseInt(c[1]); if(!a&&!c){ const n=val.match(/\d+/g); if(n) result.adults=parseInt(n[0]); } }
+    if(line.match(/^4[.)]/i)) result.contact=line.replace(/^4[.)]\s*/,'').trim();
+    if(line.match(/^5[.)]/i)) result.hotel=line.replace(/^5[.)]\s*/,'').trim();
+    if(line.match(/^6[.)]/i)){ const val=line.replace(/^6[.)]\s*/,''); if(val.match(/нал/i)) result.payMethod='Наличные'; if(val.match(/перевод/i)) result.payMethod='Перевод'; if(val.match(/usdt/i)) result.payMethod='USDT'; if(val.match(/vnd|донг/i)) result.currency='VND'; if(val.match(/usd/i)) result.currency='USD $'; if(val.match(/rub|руб/i)) result.currency='RUB'; }
+    if(line.match(/^7[.)]/i)) result.notes=line.replace(/^7[.)]\s*/,'').trim();
+    const tm=line.match(/[Ии]того[:\s]+([0-9][0-9\s]*)\s*(₫|vnd|VND|\$|USD|₽|RUB)?/); if(tm) result.totalAmount=tm[1].replace(/\s/g,'')+(tm[2]?' '+tm[2]:'');
+  });
+  const pr=document.getElementById('parseResult'); pr.classList.add('show');
+  pr.innerHTML='<strong style="color:var(--accent)">Распознано:</strong><br>'+Object.entries(result).map(([k,v])=>k+': '+v).join('<br>');
+  document.getElementById('parsedFormContainer').style.display='';
+  if(result.date) document.getElementById('pfDate').value=result.date;
+  if(result.route) document.getElementById('pfRoute').value=result.route;
+  if(result.adults) document.getElementById('pfAdults').value=result.adults;
+  if(result.children) document.getElementById('pfChildren').value=result.children;
+  if(result.contact) document.getElementById('pfContact').value=result.contact;
+  if(result.hotel) document.getElementById('pfHotel').value=result.hotel;
+  if(result.currency) document.getElementById('pfCurrency').value=result.currency;
+  if(result.payMethod) document.getElementById('pfPayMethod').value=result.payMethod;
+  if(result.totalAmount) document.getElementById('pfAmount').value=result.totalAmount.trim();
+  if(result.notes) document.getElementById('pfNotes').value=result.notes;
+  updateCommissionPreview();
+}
+function formatDateLabel(dateStr){ if(!dateStr||dateStr==='—') return '—'; const d=new Date(dateStr+'T00:00:00'); if(isNaN(d)) return dateStr; const tod=today(),tom=tomorrow(); if(dateStr===tod) return 'Сегодня, '+formatDate(d); if(dateStr===tom) return 'Завтра, '+formatDate(d); return formatDate(d); }
+function formatDate(d){ const months=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек']; const days=['вс','пн','вт','ср','чт','пт','сб']; return d.getDate()+' '+months[d.getMonth()]+' ('+days[d.getDay()]+')'; }
+function pluralBooking(n){ if(n===1) return 'бронь'; if(n>=2&&n<=4) return 'брони'; return 'броней'; }
+</script>
 </body>
 </html>
