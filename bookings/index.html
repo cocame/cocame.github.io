@@ -221,7 +221,7 @@
   </div>
 </div>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4AP9eRBrmH-NKi27CH4nhDPF1WfDrXYH90TJhVqGBn0I1ROqN18KW4JlrpgxzEAtI_w/exec';
+const GIST_ID='c75e3776c5e44ef9bee5cb588a47d51d';const GIST_TOKEN='ТОКЕН';const GIST_URL='https://api.github.com/gists/'+GIST_ID;
 const ROUTES = {
   'ХЮЭ':{commission:9,emoji:'⛩'},'ХОЙАН':{commission:9,emoji:'🏮'},
   'ОСТРОВА ЧАМ':{commission:6,emoji:'🛥'},'ДАНАНГ':{commission:7,emoji:'⛵️'},
@@ -236,6 +236,7 @@ const ROUTE_ALIASES = {
 function normalizeRoute(str){ const s=str.toLowerCase().trim(); for(const [r,a] of Object.entries(ROUTE_ALIASES)){ if(a.some(x=>s.includes(x))) return r; } return str.toUpperCase(); }
 let allBookings=[], currentFilter='upcoming', editingId=null, currentTab='manual';
 window.onload=function(){ loadBookings(); };
+function saveGist(b){return fetch(GIST_URL,{method:"PATCH",headers:{"Authorization":"token "+GIST_TOKEN,"Content-Type":"application/json"},body:JSON.stringify({files:{"bookings.json":{content:JSON.stringify(b)}}})});}
 function loadBookings(){
   const cb = 'cb_' + Date.now();
   window[cb] = function(data){ allBookings=data||[]; renderBookings(); updateStats(); delete window[cb]; document.getElementById('jsonp_'+cb) && document.getElementById('jsonp_'+cb).remove(); };
@@ -386,14 +387,11 @@ function saveBooking(){
   if(!data.route){ alert('Укажите маршрут'); return; }
   document.getElementById('saveBtn').textContent='Сохранение...'; document.getElementById('saveBtn').disabled=true;
   const action=editingId?'updateBooking':'addBooking';
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action,...data})})
-    .then(r=>r.json())
-    .then(()=>{ closeModal(); clearForm(); document.getElementById('saveBtn').textContent='Сохранить'; document.getElementById('saveBtn').disabled=false; loadBookings(); })
-    .catch(err=>{ alert('Ошибка: '+err.message); document.getElementById('saveBtn').textContent='Сохранить'; document.getElementById('saveBtn').disabled=false; });
+  const action=editingId?'updateBooking':'addBooking';const id=editingId||String(Date.now());const adults=parseInt(data.adults)||0;const children=parseInt(data.children)||0;const rate={'ХЮЭ':9,'ХОЙАН':9,'ОСТРОВА ЧАМ':6,'ДАНАНГ':7,'БА НА ХИЛЛС':5,'HOT SPRINGS':7}[data.route]||0;const commission=Math.round(adults*rate+children*rate*0.5);if(action==='addBooking'){data.id=id;data.commission=commission;allBookings.push(data);}else{const idx=allBookings.findIndex(b=>b.id==data.id);if(idx>-1){data.commission=commission;allBookings[idx]=data;}}saveGist(allBookings).then(()=>{closeModal();clearForm();document.getElementById('saveBtn').textContent='Сохранить';document.getElementById('saveBtn').disabled=false;loadBookings();}).catch(err=>{alert('Ошибка: '+err.message);document.getElementById('saveBtn').textContent='Сохранить';document.getElementById('saveBtn').disabled=false;});
 }
-function deleteBooking(id){ if(!confirm('Удалить?')) return; fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'deleteBooking',id})}).then(()=>loadBookings()); }
-function togglePayStatus(id,status){ const b=allBookings.find(x=>x.id==id); if(!b) return; b.payStatus=b.payStatus===status?'unpaid':status; fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateBooking',...b})}).then(()=>loadBookings()); }
-function setTripStatus(id,status){ const b=allBookings.find(x=>x.id==id); if(!b) return; b.tripStatus=status; fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateBooking',...b})}).then(()=>loadBookings()); }
+function deleteBooking(id){ if(!confirm('Удалить?')) return; allBookings=allBookings.filter(b=>b.id!=id);saveGist(allBookings).then(()=>loadBookings()); }
+function togglePayStatus(id,status){ const b=allBookings.find(x=>x.id==id); if(!b) return; b.payStatus=b.payStatus===status?'unpaid':status; saveGist(allBookings).then(()=>loadBookings()); }
+function setTripStatus(id,status){ const b=allBookings.find(x=>x.id==id); if(!b) return; b.tripStatus=status; saveGist(allBookings).then(()=>loadBookings()); }
 function parseText(){
   const text=document.getElementById('pasteText').value; if(!text.trim()) return;
   const result={};
