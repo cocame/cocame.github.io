@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конвертер валют — Narada Travels</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;font-weight:300;background:#f5f3ef;color:#1a1917;min-height:100vh;padding:0 0 60px}
+header{padding:28px 20px 20px;text-align:center;background:#fff;border-bottom:1px solid #e4e0d8}
+.brand{font-size:20px;font-weight:500;letter-spacing:.04em;color:#8b6914}
+.tagline{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#7a756c;margin-top:4px}
+.status{font-size:10px;color:#7a756c;text-align:center;padding:10px;background:#fff;border-bottom:1px solid #e4e0d8}
+main{max-width:440px;margin:0 auto;padding:16px}
+.add-row{display:flex;gap:8px;margin-bottom:12px}
+.add-btn{flex:1;padding:11px;border-radius:8px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:1px solid #e4e0d8;color:#7a756c;background:#fff;font-family:'DM Sans',sans-serif;transition:all .15s}
+.add-btn:hover{border-color:#8b6914;color:#8b6914}
+.item{background:#fff;border:1px solid #e4e0d8;border-radius:10px;padding:12px;margin-bottom:8px}
+.item-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.badge{font-size:9px;padding:2px 8px;border-radius:3px;letter-spacing:.06em;text-transform:uppercase}
+.bt{background:#fdf3e0;color:#8b6914}
+.bb{background:#e0f2f0;color:#2a7a6f}
+.del{margin-left:auto;background:none;border:none;color:#bbb;font-size:20px;cursor:pointer;line-height:1;padding:0 2px}
+.input-row{display:flex;gap:8px}
+.num-wrap{flex:1;background:#f5f3ef;border:1px solid #e4e0d8;border-radius:7px;padding:8px 12px}
+.num-wrap input{width:100%;background:none;border:none;outline:none;color:#1a1917;font-size:20px;font-family:'DM Mono',monospace}
+.cur-wrap{background:#f5f3ef;border:1px solid #e4e0d8;border-radius:7px;padding:8px 10px}
+.cur-wrap select{background:none;border:none;outline:none;color:#7a756c;font-size:13px;font-family:'DM Mono',monospace;cursor:pointer}
+.results{margin-top:10px;border-top:1px solid #f0ece4;padding-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:3px 10px}
+.rr{display:flex;justify-content:space-between;padding:2px 0}
+.rl{font-size:9px;color:#aaa09a}
+.rv{font-size:11px;font-family:'DM Mono',monospace;color:#1a1917}
+.tbox{background:#fff;border:1px solid #e4e0d8;border-radius:10px;padding:12px;margin-bottom:8px}
+.tl{font-size:9px;color:#aaa09a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.tu{font-size:24px;font-family:'DM Mono',monospace;color:#1a1917;margin-bottom:3px}
+.tr{font-size:11px;font-family:'DM Mono',monospace;color:#7a756c}
+.copy-btn{width:100%;padding:12px;border-radius:8px;border:none;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;font-weight:500;background:#8b6914;color:#fff;font-family:'DM Sans',sans-serif}
+.empty{font-size:12px;color:#aaa09a;text-align:center;padding:24px 0}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1917;color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .2s;z-index:9999;pointer-events:none;white-space:nowrap}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Narada Travels</div>
+  <div class="tagline">Конвертер валют</div>
+</header>
+<div class="status" id="st">Загрузка курсов...</div>
+<main>
+  <div class="add-row">
+    <button class="add-btn" onclick="add('tour')">+ Тур</button>
+    <button class="add-btn" onclick="add('ticket')">+ Билет</button>
+  </div>
+  <div id="items"><div class="empty">Добавь тур или билет</div></div>
+  <div class="tbox" id="tb" style="display:none">
+    <div class="tl">Итого</div>
+    <div class="tu" id="tu">—</div>
+    <div class="tr" id="tr">—</div>
+  </div>
+  <button class="copy-btn" onclick="cp()">Скопировать</button>
+</main>
+<div class="toast" id="toast">✓ Скопировано</div>
+
+<script>
+let R=null,items=[],uid=0;
+function ceil(v,s){return Math.ceil(v/s)*s;}
+function fR(n){return n.toLocaleString('ru-RU')+' ₽';}
+function fV(n){return n.toLocaleString('ru-RU')+' ₫';}
+
+async function load(){
+  try{
+    const d=await(await fetch('https://open.er-api.com/v6/latest/USD')).json();
+    if(d.result==='success'){
+      R={RUB:d.rates.RUB,VND:d.rates.VND};
+      document.getElementById('st').textContent='1 USD = '+Math.round(R.RUB*1.15)+' ₽  ·  1 USD = '+Math.round(R.VND*1.03).toLocaleString('ru-RU')+' ₫';
+    }
+  }catch(e){
+    R={RUB:82.5,VND:25400};
+    document.getElementById('st').textContent='Резервные курсы';
+  }
+  render();
+}
+
+function toU(v,c){
+  if(!v||!R)return 0;
+  if(c==='RUB')return v/R.RUB;
+  if(c==='VND')return v/R.VND;
+  return +v;
+}
+
+function conv(usd,isTour,inputCur){
+  if(!R)return null;
+  const rubRate=isTour&&inputCur!=='RUB'?R.RUB*1.15:R.RUB;
+  const vndRate=isTour&&inputCur!=='VND'?R.VND*1.03:R.VND;
+  return{
+    usd:Math.ceil(usd),
+    rub:ceil(usd*rubRate,100),
+    vnd:ceil(usd*vndRate,100000),
+    usdt:Math.ceil(usd)
+  };
+}
+
+function add(type){
+  const id=++uid;
+  items.push({id,type,val:'',cur:type==='ticket'?'VND':'USD'});
+  render();
+  setTimeout(()=>{const e=document.getElementById('n'+id);if(e)e.focus();},30);
+}
+
+function del(id){items=items.filter(i=>i.id!==id);render();}
+
+function ch(id){
+  const it=items.find(i=>i.id===id);
+  if(!it)return;
+  const ni=document.getElementById('n'+id);
+  const ci=document.getElementById('c'+id);
+  if(ni)it.val=ni.value;
+  if(ci)it.cur=ci.value;
+  upRes(id);
+  upTotal();
+}
+
+function upRes(id){
+  const it=items.find(i=>i.id===id);
+  const b=document.getElementById('r'+id);
+  if(!b||!it||!R)return;
+  const u=toU(+it.val||0,it.cur);
+  if(!u){b.innerHTML='';return;}
+  const p=conv(u,it.type==='tour',it.cur);
+  const m=it.type==='tour';
+  const rubLbl='RUB'+(m&&it.cur!=='RUB'?' +15%':'');
+  const vndLbl='VND'+(m&&it.cur!=='VND'?' +3%':'');
+  b.innerHTML=`
+    <div class="rr"><span class="rl">USD</span><span class="rv">${p.usd} $</span></div>
+    <div class="rr"><span class="rl">${rubLbl}</span><span class="rv">${fR(p.rub)}</span></div>
+    <div class="rr"><span class="rl">${vndLbl}</span><span class="rv">${fV(p.vnd)}</span></div>
+    <div class="rr"><span class="rl">USDT</span><span class="rv">${p.usdt} USDT</span></div>`;
+}
+
+function upTotal(){
+  if(!R||!items.length){document.getElementById('tb').style.display='none';return;}
+  let tU=0,tR=0,tV=0,any=false;
+  items.forEach(it=>{
+    const u=toU(+it.val||0,it.cur);
+    if(!u)return;
+    any=true;
+    const p=conv(u,it.type==='tour',it.cur);
+    tU+=p.usd;tR+=p.rub;tV+=p.vnd;
+  });
+  if(!any){document.getElementById('tb').style.display='none';return;}
+  document.getElementById('tb').style.display='block';
+  document.getElementById('tu').textContent=Math.ceil(tU)+' $';
+  document.getElementById('tr').textContent=fR(ceil(tR,100))+' / '+fV(ceil(tV,100000))+' / '+Math.ceil(tU)+' USDT';
+}
+
+function render(){
+  const el=document.getElementById('items');
+  if(!items.length){el.innerHTML='<div class="empty">Добавь тур или билет</div>';upTotal();return;}
+  el.innerHTML=items.map(it=>`
+    <div class="item">
+      <div class="item-top">
+        <span class="badge ${it.type==='tour'?'bt':'bb'}">${it.type==='tour'?'Тур':'Билет'}</span>
+        <button class="del" onclick="del(${it.id})">×</button>
+      </div>
+      <div class="input-row">
+        <div class="num-wrap">
+          <input type="text" inputmode="numeric" id="n${it.id}" value="${it.val}" placeholder="0" oninput="ch(${it.id})">
+        </div>
+        <div class="cur-wrap">
+          <select id="c${it.id}" onchange="ch(${it.id})">
+            <option ${it.cur==='USD'?'selected':''}>USD</option>
+            <option ${it.cur==='RUB'?'selected':''}>RUB</option>
+            <option ${it.cur==='VND'?'selected':''}>VND</option>
+            <option ${it.cur==='USDT'?'selected':''}>USDT</option>
+          </select>
+        </div>
+      </div>
+      <div class="results" id="r${it.id}"></div>
+    </div>`).join('');
+  items.forEach(it=>upRes(it.id));
+  upTotal();
+}
+
+function showToast(){
+  const t=document.getElementById('toast');
+  t.style.opacity='1';
+  clearTimeout(t._x);
+  t._x=setTimeout(()=>{t.style.opacity='0';},1800);
+}
+
+function cp(){
+  if(!items.length||!R)return;
+  let txt='',tU=0,tR=0,tV=0;
+  items.forEach(it=>{
+    const u=toU(+it.val||0,it.cur);
+    if(!u)return;
+    const p=conv(u,it.type==='tour',it.cur);
+    txt+=(it.type==='tour'?'Тур':'Билет')+': '+p.usd+' $ / '+fR(p.rub)+' / '+fV(p.vnd)+' / '+p.usdt+' USDT\n';
+    tU+=p.usd;tR+=p.rub;tV+=p.vnd;
+  });
+  if(!txt)return;
+  txt+='\nИтого: '+Math.ceil(tU)+' $ / '+fR(ceil(tR,100))+' / '+fV(ceil(tV,100000))+' / '+Math.ceil(tU)+' USDT';
+  navigator.clipboard.writeText(txt.trim()).then(showToast);
+}
+
+load();
+</script>
+</body>
+</html>
