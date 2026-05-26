@@ -603,7 +603,13 @@ footer p { font-size: 12px; color: rgba(255,255,255,0.25); }
         </div>
         <div class="frow">
           <div class="field"><label>Кол-во человек</label><input type="number" name="people" placeholder="2" min="1" required></div>
-          <div class="field"><label>Примерная дата</label><input type="text" name="date" placeholder="Например: 15 июня"></div>
+        </div>
+        <div class="field">
+          <label>Примерные даты поездки</label>
+          <div class="frow">
+            <div class="field"><label style="font-size:11px;opacity:.6;letter-spacing:0;text-transform:none">Дата от</label><input type="date" name="date_from"></div>
+            <div class="field"><label style="font-size:11px;opacity:.6;letter-spacing:0;text-transform:none">Дата до</label><input type="date" name="date_to"></div>
+          </div>
         </div>
         <div class="field"><label>Комментарий</label><textarea name="comment" rows="3" placeholder="Дети, пожелания, вопросы..."></textarea></div>
         <button type="submit" class="fsubmit">Отправить заявку</button>
@@ -745,7 +751,10 @@ document.querySelectorAll('.fq').forEach(btn => {
 document.getElementById('bForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   const d = new FormData(this);
-  const text = `Новая заявка!\n\nИмя: ${d.get('name')}\nКонтакт: ${d.get('contact')}\nТур: ${d.get('tour')}\nЧеловек: ${d.get('people')}\nДата: ${d.get('date')||'не указана'}\nКомментарий: ${d.get('comment')||'нет'}`;
+  const dateFrom = d.get('date_from') || '';
+  const dateTo = d.get('date_to') || '';
+  const dates = dateFrom && dateTo ? `${dateFrom} — ${dateTo}` : dateFrom || dateTo || 'не указаны';
+  const text = `Новая заявка!\n\nИмя: ${d.get('name')}\nКонтакт: ${d.get('contact')}\nТур: ${d.get('tour')}\nЧеловек: ${d.get('people')}\nДаты: ${dates}\nКомментарий: ${d.get('comment')||'нет'}`;
   try {
     await fetch('https://api.telegram.org/bot8455166453:AAH5IKJlFTSEUS-UdK7uMA15jW98FwvESvg/sendMessage', {
       method: 'POST', headers: {'Content-Type':'application/json'},
