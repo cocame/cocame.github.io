@@ -144,6 +144,7 @@ nav {
 .b-cham   { grid-column: span 4; grid-row: span 2; }
 .b-vin    { grid-column: span 3; }
 .b-surf   { grid-column: span 3; }
+.b-hayvan { grid-column: span 7; }
 .b-sea    { grid-column: span 5; }
 
 /* ── ЭТАЖ 3: ГИД ПО ДАНАНГУ (BENTO GRID) ── */
@@ -324,7 +325,7 @@ footer p { font-size: 12px; color: rgba(255,255,255,0.25); }
   .hero { height: 70vh; }
   .hero-content { padding: 0 6% 12%; }
   .bento { grid-template-columns: 1fr !important; grid-auto-rows: 220px; }
-  .b-hue,.b-hoian,.b-bana,.b-danang,.b-kalmar,.b-springs,.b-cham,.b-vin,.b-surf,.b-sea { grid-column: span 1 !important; grid-row: span 1 !important; }
+  .b-hue,.b-hoian,.b-bana,.b-danang,.b-kalmar,.b-springs,.b-cham,.b-vin,.b-surf,.b-hayvan,.b-sea { grid-column: span 1 !important; grid-row: span 1 !important; }
   .tours, .guide, .emotions, .faq, .form-s { padding: 48px 16px; }
   .guide-grid { grid-template-columns: 1fr; grid-auto-rows: auto; }
   .gc { min-height: 180px; }
@@ -450,6 +451,15 @@ footer p { font-size: 12px; color: rgba(255,255,255,0.25); }
       </div>
       <a href="#form" class="bc-book" onclick="event.stopPropagation()">Забронировать</a>
       <div class="bc-expand" onclick="event.stopPropagation();openD('surf')">+</div>
+    </div>
+    <div class="bc b-hayvan" onclick="openD('hayvan')">
+      <img src="images/hayvan.jpg" alt="Купание в водопадах перевал Хайван">
+      <div class="bc-info">
+        <div class="bc-title">Купание в водопадах на перевале Хайван</div>
+        <div class="bc-sub">Горный серпантин · Ворота неба · от 65$</div>
+      </div>
+      <a href="#form" class="bc-book" onclick="event.stopPropagation()">Забронировать</a>
+      <div class="bc-expand" onclick="event.stopPropagation();openD('hayvan')">+</div>
     </div>
     <div class="bc b-sea" onclick="openD('sea')">
       <img src="images/sea.png" alt="Морская прогулка Дананг">
@@ -664,6 +674,11 @@ const tours = {
     inc:["Трансфер от/до отеля","Русский инструктор","Сёрфборд","Лайкра","Защита от солнца","Видеосъёмка"],
     exc:["Наличные VND на чаевые"],
     prices:[["Формат","Цена"],["Групповой (до 3 чел)","40 $"],["Индивидуально 1/1","80 $"],["Сплит для двоих","110 $"]]},
+  hayvan:{title:"Купание в водопадах на перевале Хайван",price:"от 65$",
+    prog:[["08:00","Встреча у отеля"],["09:00","Перевал Хайван — фотоостановка с панорамой на море"],["09:15","Hai Van Quan — исторические ворота неба"],["12:30","Жемчужная лагуна"],["13:00","Обед"],["14:00","Каскад водопадов — купание"],["17:00","Возвращение в отель"]],
+    inc:["Трансфер от/до отеля","Русскоязычный гид"],
+    exc:["Обед (оплачивается на месте)"],
+    prices:[["Категория","Цена"],["Взрослые и дети от 10 лет","65 $"],["Дети до 10 лет","33 $"],["Дети до 3 лет","Бесплатно"]]},
   sea:{title:"Морская прогулка в Дананге",price:"от 70$",
     prog:[["08–10","Старт на выбор: 08:00, 09:00 или 10:00"],["","Морская рыбалка"],["","Снорклинг — кораллы, яркие рыбы"],["","САП-борды"],["","Возвращение в порт"]],
     inc:["Трансфер от/до отеля","Гид","Рыболовные снасти","Снорклинг","САП-борды","Вода"],
