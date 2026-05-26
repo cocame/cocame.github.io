@@ -204,12 +204,10 @@ nav {
 .btn-tg:hover { background: #1a8bc4; transform: translateY(-1px); }
 
 /* ── FAQ ── */
-.faq { padding: 72px 56px; background: #f9fafb; text-align: center; }
-.faq-toggle { font-size: clamp(28px,3.5vw,48px); font-weight: 800; letter-spacing: -0.02em; cursor: pointer; display: inline-flex; align-items: center; gap: 16px; user-select: none; }
-.faq-toggle .faq-arrow { font-size: 0.65em; color: var(--c); transition: transform .3s; display: inline-block; }
-.faq.open .faq-arrow { transform: rotate(180deg); }
-.faq-wrap { max-height: 0; overflow: hidden; transition: max-height .45s ease; text-align: left; max-width: 720px; margin: 0 auto; }
-.faq.open .faq-wrap { max-height: 2000px; margin-top: 40px; }
+.faq { padding: 48px 56px; background: #f7f7f5; }
+.faq h2 { font-size: clamp(28px,3.5vw,48px); font-weight: 800; letter-spacing: -0.02em; text-align: center; margin-bottom: 32px; }
+.faq-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
+
 .fi { background: #fff; border-radius: var(--r); margin-bottom: 8px; overflow: hidden; }
 .fq {
   width: 100%; background: none; border: none; text-align: left;
@@ -333,7 +331,8 @@ footer p { font-size: 12px; color: rgba(255,255,255,0.25); }
   .hero-content { padding: 0 6% 12%; }
   .bento { grid-template-columns: 1fr !important; grid-auto-rows: 220px; }
   .b-hue,.b-hoian,.b-bana,.b-danang,.b-kalmar,.b-springs,.b-cham,.b-vin,.b-surf,.b-hayvan,.b-sea { grid-column: span 1 !important; grid-row: span 1 !important; }
-  .tours, .guide, .emotions, .faq, .form-s { padding: 48px 16px; }
+  .tours, .guide, .emotions, .faq, .form-s { padding: 40px 16px; }
+  .faq-wrap { grid-template-columns: 1fr; }
   .guide-grid { grid-template-columns: 1fr; grid-auto-rows: auto; }
   .gc { min-height: 180px; }
   .gc.tall { grid-row: span 1; }
@@ -504,7 +503,7 @@ footer p { font-size: 12px; color: rgba(255,255,255,0.25); }
 
 <!-- ── FAQ ── -->
 <section class="faq" id="faq">
-  <h2 class="faq-toggle">Частые вопросы <span class="faq-arrow">▾</span></h2>
+  <h2>Частые вопросы</h2>
   <div class="faq-wrap">
     <div class="fi"><button class="fq">Нужно ли знать вьетнамский или английский? <span class="fi-icon">+</span></button><div class="fa">Нет. Все наши гиды говорят по-русски. Всё общение — на вашем языке от встречи до возвращения в отель.</div></div>
     <div class="fi"><button class="fq">Как оплатить тур? <span class="fi-icon">+</span></button><div class="fa">Принимаем: доллары наличными, донги наличными и переводом по QR-коду, рубли переводом по СБП, USDT на Bybit по UID.<br><br>Не принимаем: доллары старого образца, оплату с карты через терминал, криптокошельки.</div></div>
@@ -771,10 +770,6 @@ function toggleMenu() {
   links.style.cssText = show ? 'display:flex;flex-direction:column;position:fixed;top:64px;left:0;right:0;background:#fff;padding:20px;gap:16px;border-bottom:1px solid #E5E7EB;z-index:99' : 'display:none';
   cta && (cta.style.display = show ? 'block' : '');
 }
-
-document.querySelector('.faq-toggle').addEventListener('click', () => {
-  document.querySelector('.faq').classList.toggle('open');
-});
 
 document.querySelectorAll('.fq').forEach(btn => {
   btn.addEventListener('click', () => {
