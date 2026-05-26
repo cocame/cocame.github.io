@@ -555,14 +555,16 @@ footer p { font-size: 12px; color: rgba(255,255,255,0.25); }
     </div>
 
     <!-- Ресторан 2 — Ми Куанг -->
-    <div class="gc" style="padding:0;overflow:hidden;border:none;flex-direction:column;justify-content:flex-start;">
+    <div class="gc" style="grid-row:span 2;padding:0;overflow:hidden;border:none;flex-direction:column;justify-content:flex-start;">
       <img src="images/rest-miquang.jpg" alt="Mì Quảng — Michelin Guide" style="width:100%;display:block;height:auto;">
-      <div style="background:linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,0.88) 100%);padding:10px 18px 18px;">
+      <div style="background:linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,0.88) 100%);padding:14px 18px 22px;display:flex;flex-direction:column;gap:10px;">
         <a href="https://maps.app.goo.gl/vBuhMQAW8sUfcG9E6" target="_blank" rel="noopener"
-           style="display:block;color:#111;font-size:11px;font-weight:500;text-decoration:none;margin-bottom:8px;">Ресторан из гида Мишлен в Дананге →</a>
-        <div style="color:#fff;font-size:14px;font-weight:700;line-height:1.4;margin-bottom:5px;">Ми Куанг — кулинарная икона Центрального Вьетнама</div>
-        <div style="color:rgba(255,255,255,0.6);font-size:12px;margin-bottom:9px;">Стоимость 1–2 $</div>
-        <a href="javascript:void(0)" onclick="openTour('hoian')" style="color:#ffb49a;font-size:12px;font-weight:600;text-decoration:none;">Попробовать можете с нами на экскурсии в Хойане →</a>
+           style="color:#111;font-size:11px;font-weight:500;text-decoration:none;">Ресторан из гида Мишлен в Дананге →</a>
+        <div style="color:#fff;font-size:14px;font-weight:700;line-height:1.4;">Ми Куанг — кулинарная икона Центрального Вьетнама</div>
+        <div style="color:rgba(255,255,255,0.7);font-size:12px;">Стоимость 1–2 $</div>
+        <div style="color:rgba(255,255,255,0.9);font-size:12px;line-height:1.5;">Попробовать можете с нами на экскурсии
+          <button onclick="openD('hoian')" style="background:var(--c);color:#fff;border:none;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Хойан</button>
+        </div>
       </div>
     </div>
 
