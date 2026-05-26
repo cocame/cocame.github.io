@@ -162,9 +162,10 @@ nav {
 .gc {
   background: #fff; border-radius: var(--r); padding: 28px;
   display: flex; flex-direction: column; justify-content: flex-end;
-  border: 1.5px solid var(--border); transition: border-color .2s; overflow: hidden;
+  border: 1.5px solid var(--border); overflow: hidden;
+  transition: border-color .2s, transform .3s ease; cursor: pointer;
 }
-.gc:hover { border-color: #d1d5db; }
+.gc:hover { border-color: #d1d5db; transform: scale(1.02); }
 .gc.tall { grid-row: span 2; justify-content: space-between; }
 .gc-icon { font-size: 28px; margin-bottom: auto; }
 .gc.tall .gc-icon { margin-bottom: 0; }
