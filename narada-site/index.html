@@ -504,20 +504,18 @@ footer p { font-size: 12px; color: rgba(255,255,255,0.25); }
   <p class="guide-sub">Секретные локации, лучшие рестораны и советы от команды Narada</p>
   <div class="guide-grid">
 
-    <!-- Лайфхаки (tall — 2 строки) -->
-    <div class="gc tall" style="padding:16px;justify-content:flex-start;overflow:hidden;">
+    <!-- Лайфхаки -->
+    <div class="gc rest" style="padding:16px;overflow:hidden;">
       <img src="images/guide-vietnam.jpg" alt="" style="width:calc(100% + 32px);margin:-16px -16px 16px;height:200px;object-fit:cover;object-position:center 75%;display:block;">
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <h3>Что нужно знать перед поездкой</h3>
-        <p>🛂 <b>Документы</b> — 45 дней без визы. Обратный билет могут проверить.</p>
-        <p>💵 <b>Деньги</b> — Донг. Доллары лучше рублей. Мир не работает. Сбер/Озон — QR. Apple Pay с зарубежной картой.</p>
-        <p>📶 <b>Связь</b> — симка в зоне прилёта (3 доллара за 5 ГБ) или e-sim на trip.com.</p>
-        <p>🛵 <b>Транспорт</b> — Grab дешевле такси. Шлем обязателен. Электробайки без прав, от 110 кубов — права кат. А.</p>
-        <p>🚶 <b>Улица</b> — переходить медленно и уверенно — объедут.</p>
-        <p>🏥 <b>Здоровье</b> — страховка обязательна. Репеллент от комаров (денге). Только бутилированная вода.</p>
-        <p><b>Главное правило:</b> Торгуйтесь. Улыбайтесь. Не пейте из-под крана.</p>
-        <a href="#tours" class="gc-cta">Смотреть все экскурсии →</a>
-      </div>
+      <h3>Что нужно знать перед поездкой</h3>
+      <p>🛂 <b>Документы</b> — 45 дней без визы. Обратный билет могут проверить.</p>
+      <p>💵 <b>Деньги</b> — Донг. Доллары лучше рублей. Мир не работает. Сбер/Озон — QR. Apple Pay с зарубежной картой.</p>
+      <p>📶 <b>Связь</b> — симка в зоне прилёта (3 доллара за 5 ГБ) или e-sim на trip.com.</p>
+      <p>🛵 <b>Транспорт</b> — Grab дешевле такси. Шлем обязателен. Электробайки без прав, от 110 кубов — права кат. А.</p>
+      <p>🚶 <b>Улица</b> — переходить медленно и уверенно — объедут.</p>
+      <p>🏥 <b>Здоровье</b> — страховка обязательна. Репеллент от комаров (денге). Только бутилированная вода.</p>
+      <p><b>Главное правило:</b> Торгуйтесь. Улыбайтесь. Не пейте из-под крана.</p>
+      <a href="#tours" class="gc-cta">Смотреть все экскурсии →</a>
     </div>
 
     <!-- Кофейни -->
@@ -551,17 +549,13 @@ footer p { font-size: 12px; color: rgba(255,255,255,0.25); }
     </div>
 
     <!-- Ресторан 2 — Ми Куанг -->
-    <div class="gc" style="grid-row:span 3;padding:0;overflow:hidden;border:none;flex-direction:column;justify-content:flex-start;">
-      <img src="images/rest-miquang.jpg" alt="Mì Quảng — Michelin Guide" style="width:100%;display:block;height:auto;">
-      <div style="background:linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,0.88) 100%);padding:14px 18px 22px;display:flex;flex-direction:column;gap:10px;">
-        <a href="https://maps.app.goo.gl/vBuhMQAW8sUfcG9E6" target="_blank" rel="noopener"
-           style="color:rgba(255,255,255,0.6);font-size:13px;text-decoration:none;">Ресторан из гида Мишлен в Дананге →</a>
-        <div style="color:rgba(255,255,255,0.9);font-size:13px;line-height:1.4;">Ми Куанг — кулинарная икона Центрального Вьетнама</div>
-        <div style="color:rgba(255,255,255,0.9);font-size:13px;">Стоимость 1–2 $</div>
-        <div style="color:rgba(255,255,255,0.9);font-size:13px;line-height:1.5;">Попробовать можете с нами на экскурсии
-          <a href="javascript:void(0)" onclick="openD('hoian')" style="color:rgba(255,255,255,0.9);text-decoration:underline;font-size:13px;">Хойан →</a>
-        </div>
-      </div>
+    <div class="gc rest" style="padding:16px;">
+      <img src="images/rest-miquang.jpg" alt="Mì Quảng — Michelin Guide" style="width:calc(100% + 32px);margin:-16px -16px 16px;height:200px;object-fit:cover;display:block;">
+      <div class="gc-icon">🍜</div>
+      <h3>Mì Quảng — гид Мишлен</h3>
+      <p>Ми Куанг — кулинарная икона Центрального Вьетнама. Стоимость 1–2 $.</p>
+      <p>Попробовать с нами на экскурсии <a href="javascript:void(0)" onclick="openD('hoian')" style="color:var(--c);text-decoration:underline;">Хойан →</a></p>
+      <div class="rest-meta"><span><a href="https://maps.app.goo.gl/vBuhMQAW8sUfcG9E6" target="_blank" rel="noopener" style="color:var(--gray);text-decoration:none;">📍 Ресторан из гида Мишлен →</a></span></div>
     </div>
 
     <!-- Ресторан 3 — руфтоп бар -->
