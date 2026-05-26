@@ -803,7 +803,7 @@ document.getElementById('bForm').addEventListener('submit', async function(e) {
     <div class="pwa-text"><b>Narada Travels</b>Добавьте на экран Домой</div>
     <button class="pwa-close" onclick="document.getElementById('pwa-ios').style.display='none';sessionStorage.setItem('pwa-ios-closed','1')">✕</button>
   </div>
-  <div class="pwa-hint"><span>⬆️</span> Нажмите <strong>&nbsp;"Поделиться"&nbsp;</strong> → <strong>&nbsp;"На экран Домой"</strong></div>
+  <div class="pwa-hint" id="pwa-ios-hint"></div>
 </div>
 
 <!-- Android PWA button -->
@@ -811,9 +811,20 @@ document.getElementById('bForm').addEventListener('submit', async function(e) {
 
 <script>
 (function(){
-  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  var ua = navigator.userAgent;
+  var isIOS = /iphone|ipad|ipod/i.test(ua);
   var isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   if(isIOS && !isStandalone && !sessionStorage.getItem('pwa-ios-closed')){
+    var isChrome = /CriOS/i.test(ua);
+    var isFirefox = /FxiOS/i.test(ua);
+    var hint = document.getElementById('pwa-ios-hint');
+    if(isChrome){
+      hint.innerHTML = '<span>⋮</span> Нажмите <strong>&nbsp;три точки&nbsp;</strong> → <strong>&nbsp;"На экран Домой"</strong>';
+    } else if(isFirefox){
+      hint.innerHTML = '<span>⋯</span> Нажмите <strong>&nbsp;меню&nbsp;</strong> → <strong>&nbsp;"Добавить на экран Домой"</strong>';
+    } else {
+      hint.innerHTML = '<span>⬆️</span> Нажмите <strong>&nbsp;"Поделиться"&nbsp;</strong> → <strong>&nbsp;"На экран Домой"</strong>';
+    }
     document.getElementById('pwa-ios').style.display = 'block';
   }
   var deferredPrompt;
