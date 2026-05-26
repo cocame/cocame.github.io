@@ -156,25 +156,20 @@ nav {
 .guide-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
-  grid-auto-rows: 210px;
+  grid-auto-rows: minmax(210px, auto);
   gap: 10px;
 }
 .gc {
   background: #fff; border-radius: var(--r); padding: 28px;
   display: flex; flex-direction: column; justify-content: flex-end;
-  border: 1.5px solid var(--border); transition: border-color .2s;
+  border: 1.5px solid var(--border); transition: border-color .2s; overflow: hidden;
 }
 .gc:hover { border-color: #d1d5db; }
 .gc.tall { grid-row: span 2; justify-content: space-between; }
-.gc.accent { background: var(--c); border-color: var(--c); }
-.gc.dark { background: #121212; border-color: #121212; }
 .gc-icon { font-size: 28px; margin-bottom: auto; }
 .gc.tall .gc-icon { margin-bottom: 0; }
 .gc h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; line-height: 1.3; color: var(--dark); }
 .gc p { font-size: 13px; color: var(--gray); line-height: 1.55; margin-bottom: 14px; }
-.gc.accent h3, .gc.accent p { color: #fff; }
-.gc.dark h3 { color: #fff; }
-.gc.dark p { color: rgba(255,255,255,0.45); }
 .gc-cta {
   display: inline-block;
   font-size: 12px; font-weight: 600; text-decoration: none;
@@ -182,13 +177,22 @@ nav {
   transition: border-color .2s;
 }
 .gc-cta:hover { border-color: var(--c); }
-.gc.accent .gc-cta { color: rgba(255,255,255,0.9); border-color: rgba(255,255,255,0.4); }
-.gc.dark .gc-cta { color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.25); }
 
-/* Ресторанные карточки в гиде */
+/* Фото-карточки с фоном и оверлеем */
+.gc.photo { position: relative; background-size: cover; background-position: center; border: none; }
+.gc.photo::before { content:''; position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.72) 100%); z-index:0; }
+.gc.photo > * { position: relative; z-index: 1; }
+.gc.photo h3, .gc.photo .gc-icon { color: #fff; }
+.gc.photo p { color: rgba(255,255,255,0.82); }
+.gc.photo .gc-cta { color: rgba(255,255,255,0.9); border-color: rgba(255,255,255,0.35); }
+
+/* Ресторанные карточки */
 .gc.rest { justify-content: flex-start; }
-.gc.rest .gc-icon { font-size: 26px; margin-bottom: 12px; }
+.gc.rest .gc-icon { font-size: 22px; margin-bottom: 10px; }
 .gc.rest p { flex: 1; }
+.gc-img { width: calc(100% + 56px); margin: -28px -28px 16px; height: 160px; object-fit: cover; display: block; }
+.rest-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 12px; }
+.rest-meta span { font-size: 12px; color: var(--gray); }
 
 /* ── ЭТАЖ 4: ОТЗЫВЫ ── */
 .emotions { padding: 96px 56px; background: #fff; text-align: center; }
@@ -499,68 +503,78 @@ footer p { font-size: 12px; color: rgba(255,255,255,0.25); }
   <p class="guide-sub">Секретные локации, лучшие рестораны и советы от команды Narada</p>
   <div class="guide-grid">
 
-    <!-- Лайфхаки (tall — занимает 2 строки) -->
-    <div class="gc tall">
+    <!-- Лайфхаки (tall — 2 строки) -->
+    <div class="gc tall photo" style="background-image:url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80&fit=crop')">
       <div class="gc-icon">💡</div>
-      <h3>Что нужно знать перед поездкой</h3>
-      <p>Валюта, симкарта, безопасность и лайфхаки от местных. Чтобы первый день прошёл без сюрпризов.</p>
-      <a href="#form" class="gc-cta">Кстати, это всё расскажет наш гид на экскурсии. Забронировать</a>
+      <div>
+        <h3>Что нужно знать перед поездкой</h3>
+        <p>Валюта — донг (VND), 1&nbsp;$&nbsp;≈&nbsp;25&nbsp;000&nbsp;VND. Лучший курс у обменников в ювелирных магазинах, не в аэропорту. Симкарту Viettel или Vinaphone берите в зоне прилёта: 5&nbsp;ГБ за 3&nbsp;$. Переходите улицу медленно и уверенно — мотоциклисты объедут.</p>
+        <a href="#form" class="gc-cta">Спросить у гида на экскурсии →</a>
+      </div>
     </div>
 
     <!-- Кофейни -->
-    <div class="gc">
+    <div class="gc photo" style="background-image:url('https://images.unsplash.com/photo-1524484485831-a92ffc0de03f?w=600&q=80&fit=crop')">
       <div class="gc-icon">☕</div>
-      <h3>Топ-5 кофеен для красивых фото</h3>
-      <p>Инстаграмные места с видами и вьетнамским кофе.</p>
-      <a href="#form" class="gc-cta">Кстати, это место мы посещаем на нашей экскурсии. Забронировать</a>
+      <h3>Топ-5 кофеен для фото</h3>
+      <p>Cong Caphe с советской эстетикой, Mot Hoi Quan с видом на реку, The Vintage Emporium в колониальном доме. Везде пробуйте cà phê sữa đá — холодный кофе со сгущёнкой.</p>
+      <a href="#form" class="gc-cta">Забронировать экскурсию →</a>
     </div>
 
     <!-- Лучшие пляжи -->
-    <div class="gc accent">
+    <div class="gc photo" style="background-image:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80&fit=crop')">
       <div class="gc-icon">🌊</div>
-      <h3>Лучшие пляжи без толп туристов</h3>
-      <p>Секретные места где можно нырнуть в море в тишине.</p>
-      <a href="#form" class="gc-cta">Кстати, это место мы посещаем на нашей экскурсии. Забронировать</a>
+      <h3>Пляжи без толп</h3>
+      <p>Бай Бак на севере — почти всегда пустой, вид на Сонтра. Nam О — рыбацкий посёлок с диким пляжем. Моя Кхе хорош до 9:00 — потом набегают туристы.</p>
+      <a href="#form" class="gc-cta">Забронировать экскурсию →</a>
     </div>
 
     <!-- Ночной Дананг -->
-    <div class="gc dark">
+    <div class="gc photo" style="background-image:url('https://images.unsplash.com/photo-1518684079-3c830dcef090?w=600&q=80&fit=crop');--overlay:rgba(0,0,0,0.6)">
       <div class="gc-icon">🌙</div>
       <h3>Ночной Дананг</h3>
-      <p>Шоу Дракона, ночные рынки и жизнь после заката.</p>
-      <a href="#form" class="gc-cta">Кстати, это место мы посещаем на нашей экскурсии. Забронировать</a>
+      <p>Дракон-мост дышит огнём каждую пт и сб в 21:00 — смотрите с набережной Бах Данг бесплатно. Ночной рынок Сон Тра с 18:00: еда, сувениры, живая музыка.</p>
+      <a href="#form" class="gc-cta">Забронировать экскурсию →</a>
     </div>
 
     <!-- Ресторан 1 — морепродукты -->
     <div class="gc rest" style="grid-column: span 2;">
+      <img class="gc-img" src="https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=800&q=80&fit=crop" alt="Bé Mặn — морепродукты Дананга">
       <div class="gc-icon">🦞</div>
       <h3>Bé Mặn — лучшие морепродукты Дананга</h3>
-      <p>Местный ресторан на набережной. Омары, крабы и гигантские тигровые креветки прямо с лодки. Цены — как у вьетнамцев, не для туристов. От 8$ за блюдо.</p>
-      <a href="#form" class="gc-cta">Кстати, это место мы посещаем на нашей экскурсии. Забронировать</a>
+      <p>Ресторан без туристических наценок: омары, крабы и тигровые креветки — всё прямо из аквариума, готовят на углях при тебе. Приходите к 18:00, к 20:00 обычно полный зал.</p>
+      <div class="rest-meta"><span>📍 38 Trần Bạch Đằng, An Hải Tây</span><span>💵 от 8&nbsp;$ / чел</span><span>🕐 10:00–22:00</span></div>
+      <a href="#form" class="gc-cta">Забронировать тур с гидом →</a>
     </div>
 
     <!-- Ресторан 2 — Ми Куанг -->
     <div class="gc rest">
+      <img class="gc-img" src="https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&q=80&fit=crop" alt="Mì Quảng — вьетнамский суп">
       <div class="gc-icon">🍜</div>
       <h3>Mì Quảng Bà Mua</h3>
-      <p>Легендарный суп Ми Куанг — блюдо, которое едят только в этом регионе. Очередь из местных — лучший знак качества.</p>
-      <a href="#form" class="gc-cta">Кстати, это место мы посещаем на нашей экскурсии. Забронировать</a>
+      <p>Культовый суп Ми Куанг по рецепту нескольких поколений: густой бульон, рисовая лапша, рыба или курица, хрустящие крекеры. Очередь из местных с утра — лучший знак качества.</p>
+      <div class="rest-meta"><span>📍 19 Trưng Nữ Vương, Hải Châu</span><span>💵 ~1–2&nbsp;$</span><span>🕐 6:00–13:00</span></div>
+      <a href="#form" class="gc-cta">Забронировать тур с гидом →</a>
     </div>
 
     <!-- Ресторан 3 — руфтоп бар -->
     <div class="gc rest">
+      <img class="gc-img" src="https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=600&q=80&fit=crop" alt="Sky36 — руфтоп бар Дананг">
       <div class="gc-icon">🍹</div>
-      <h3>Sky36 — руфтоп бар на 36-м этаже</h3>
-      <p>Лучший вид на реку Хан и Дракон-мост. Коктейли от 5$. Шоу каждую пятницу и субботу.</p>
-      <a href="#form" class="gc-cta">Кстати, это место мы посещаем на нашей экскурсии. Забронировать</a>
+      <h3>Sky36 — руфтоп на 36-м этаже</h3>
+      <p>Лучший вид на реку Хан и Дракон-мост. Коктейли от 5&nbsp;$, шоу огня каждую пт и сб. Дресс-код smart casual — в шортах и шлёпанцах не пустят.</p>
+      <div class="rest-meta"><span>📍 36 Bạch Đằng, Hải Châu (Novotel)</span><span>💵 от 5&nbsp;$ / напиток</span><span>🕐 18:00–02:00</span></div>
+      <a href="#form" class="gc-cta">Забронировать тур с гидом →</a>
     </div>
 
     <!-- Ресторан 4 — Баньми -->
     <div class="gc rest">
+      <img class="gc-img" src="https://images.unsplash.com/photo-1600628421055-4d30de868b8f?w=600&q=80&fit=crop" alt="Bánh Mì Bà Lan — лучший баньми">
       <div class="gc-icon">🥖</div>
-      <h3>Bánh Mì Bà Lan — лучший баньми</h3>
-      <p>Сэндвич за 25 000 донгов (1$), который вошёл в мировые рейтинги уличной еды. Работает только до 11 утра.</p>
-      <a href="#form" class="gc-cta">Кстати, это место мы посещаем на нашей экскурсии. Забронировать</a>
+      <h3>Bánh Mì Bà Lan</h3>
+      <p>Маленькая лавка с мировым рейтингом уличной еды — хрустящий багет, паштет, зелень и соус за 25&nbsp;000 донгов (1&nbsp;$). Работает до последней булки, обычно до 11 утра.</p>
+      <div class="rest-meta"><span>📍 160 Nguyễn Chí Thanh, Hải Châu</span><span>💵 ~1&nbsp;$</span><span>🕐 6:30–11:00</span></div>
+      <a href="#form" class="gc-cta">Забронировать тур с гидом →</a>
     </div>
 
   </div>
