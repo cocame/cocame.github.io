@@ -204,13 +204,12 @@ nav {
 .btn-tg:hover { background: #1a8bc4; transform: translateY(-1px); }
 
 /* ── FAQ ── */
-.faq { padding: 72px 56px; background: #f9fafb; }
-.faq-toggle { font-size: clamp(24px,3vw,40px); font-weight: 800; letter-spacing: -0.02em; cursor: pointer; display: flex; align-items: center; gap: 16px; user-select: none; }
-.faq-toggle .faq-arrow { font-size: 0.7em; color: var(--c); transition: transform .3s; display: inline-block; }
+.faq { padding: 72px 56px; background: #f9fafb; text-align: center; }
+.faq-toggle { font-size: clamp(28px,3.5vw,48px); font-weight: 800; letter-spacing: -0.02em; cursor: pointer; display: inline-flex; align-items: center; gap: 16px; user-select: none; }
+.faq-toggle .faq-arrow { font-size: 0.65em; color: var(--c); transition: transform .3s; display: inline-block; }
 .faq.open .faq-arrow { transform: rotate(180deg); }
-.faq-wrap { max-height: 0; overflow: hidden; transition: max-height .45s ease; }
+.faq-wrap { max-height: 0; overflow: hidden; transition: max-height .45s ease; text-align: left; max-width: 720px; margin: 0 auto; }
 .faq.open .faq-wrap { max-height: 2000px; margin-top: 40px; }
-.faq-wrap { max-width: 720px; }
 .fi { background: #fff; border-radius: var(--r); margin-bottom: 8px; overflow: hidden; }
 .fq {
   width: 100%; background: none; border: none; text-align: left;
@@ -503,6 +502,23 @@ footer p { font-size: 12px; color: rgba(255,255,255,0.25); }
   </div>
 </section>
 
+<!-- ── FAQ ── -->
+<section class="faq" id="faq">
+  <h2 class="faq-toggle">Частые вопросы <span class="faq-arrow">▾</span></h2>
+  <div class="faq-wrap">
+    <div class="fi"><button class="fq">Нужно ли знать вьетнамский или английский? <span class="fi-icon">+</span></button><div class="fa">Нет. Все наши гиды говорят по-русски. Всё общение — на вашем языке от встречи до возвращения в отель.</div></div>
+    <div class="fi"><button class="fq">Как оплатить тур? <span class="fi-icon">+</span></button><div class="fa">Принимаем: доллары наличными, донги наличными и переводом по QR-коду, рубли переводом по СБП, USDT на Bybit по UID.<br><br>Не принимаем: доллары старого образца, оплату с карты через терминал, криптокошельки.</div></div>
+    <div class="fi"><button class="fq">Есть ли скидки для детей? <span class="fi-icon">+</span></button><div class="fa">Да. Дети до 3 лет — бесплатно в большинстве туров. Точные условия смотрите в описании каждого тура.</div></div>
+    <div class="fi"><button class="fq">Что включено в стоимость? <span class="fi-icon">+</span></button><div class="fa">Трансфер от/до отеля и вода. Гид, входные билеты и обед — смотрите в описании каждого тура.</div></div>
+    <div class="fi"><button class="fq">Почему нужна предоплата? <span class="fi-icon">+</span></button><div class="fa">Мы заранее бронируем транспорт, а для некоторых экскурсий — входные билеты, обеды и активности. Предоплата подтверждает ваше место в туре.</div></div>
+    <div class="fi"><button class="fq">Можно ли отменить или перенести? <span class="fi-icon">+</span></button><div class="fa">При отмене менее чем за 24 часа предоплата не возвращается. Перенос даты возможен при наличии свободных мест.</div></div>
+    <div class="fi"><button class="fq">Откуда начинаются туры? <span class="fi-icon">+</span></button><div class="fa">Трансфер от вашего отеля в Дананге. Время встречи согласуем при бронировании.</div></div>
+    <div class="fi"><button class="fq">Забираете ли вы из отелей в Хойане? <span class="fi-icon">+</span></button><div class="fa">Да, возможен трансфер из Хойана за дополнительную оплату. Условия зависят от экскурсии и количества человек.</div></div>
+    <div class="fi"><button class="fq">Можно ли с коляской? <span class="fi-icon">+</span></button><div class="fa">Наши экскурсии не подходят для колясок из-за особенностей маршрутов. Для малышей рекомендуем слинг или переноску.</div></div>
+  </div>
+</section>
+
+
 <!-- ── ЭТАЖ 3: ГИД ПО ДАНАНГУ — лайфхаки + рестораны ── -->
 <section class="guide" id="guide">
   <h2>Гид по Данангу</h2>
@@ -581,22 +597,6 @@ footer p { font-size: 12px; color: rgba(255,255,255,0.25); }
   <h2>Свежие эмоции</h2>
   <p class="emotions-sub">Мы не копируем отзывы на сайт. Посмотрите живые чаты, фотографии и честные мнения наших туристов в реальном времени.</p>
   <a href="https://t.me/Narada_reviews" target="_blank" class="btn-tg">Читать отзывы в Telegram →</a>
-</section>
-
-<!-- ── FAQ ── -->
-<section class="faq" id="faq">
-  <h2 class="faq-toggle">Частые вопросы <span class="faq-arrow">▾</span></h2>
-  <div class="faq-wrap">
-    <div class="fi"><button class="fq">Нужно ли знать вьетнамский или английский? <span class="fi-icon">+</span></button><div class="fa">Нет. Все наши гиды говорят по-русски. Всё общение — на вашем языке от встречи до возвращения в отель.</div></div>
-    <div class="fi"><button class="fq">Как оплатить тур? <span class="fi-icon">+</span></button><div class="fa">Принимаем: доллары наличными, донги наличными и переводом по QR-коду, рубли переводом по СБП, USDT на Bybit по UID.<br><br>Не принимаем: доллары старого образца, оплату с карты через терминал, криптокошельки.</div></div>
-    <div class="fi"><button class="fq">Есть ли скидки для детей? <span class="fi-icon">+</span></button><div class="fa">Да. Дети до 3 лет — бесплатно в большинстве туров. Точные условия смотрите в описании каждого тура.</div></div>
-    <div class="fi"><button class="fq">Что включено в стоимость? <span class="fi-icon">+</span></button><div class="fa">Трансфер от/до отеля и вода. Гид, входные билеты и обед — смотрите в описании каждого тура.</div></div>
-    <div class="fi"><button class="fq">Почему нужна предоплата? <span class="fi-icon">+</span></button><div class="fa">Мы заранее бронируем транспорт, а для некоторых экскурсий — входные билеты, обеды и активности. Предоплата подтверждает ваше место в туре.</div></div>
-    <div class="fi"><button class="fq">Можно ли отменить или перенести? <span class="fi-icon">+</span></button><div class="fa">При отмене менее чем за 24 часа предоплата не возвращается. Перенос даты возможен при наличии свободных мест.</div></div>
-    <div class="fi"><button class="fq">Откуда начинаются туры? <span class="fi-icon">+</span></button><div class="fa">Трансфер от вашего отеля в Дананге. Время встречи согласуем при бронировании.</div></div>
-    <div class="fi"><button class="fq">Забираете ли вы из отелей в Хойане? <span class="fi-icon">+</span></button><div class="fa">Да, возможен трансфер из Хойана за дополнительную оплату. Условия зависят от экскурсии и количества человек.</div></div>
-    <div class="fi"><button class="fq">Можно ли с коляской? <span class="fi-icon">+</span></button><div class="fa">Наши экскурсии не подходят для колясок из-за особенностей маршрутов. Для малышей рекомендуем слинг или переноску.</div></div>
-  </div>
 </section>
 
 <!-- ── ФОРМА ── -->
