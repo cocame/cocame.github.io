@@ -221,7 +221,9 @@
   </div>
 </div>
 <script>
-const GIST_ID='c75e3776c5e44ef9bee5cb588a47d51d';const GIST_TOKEN='ТОКЕН';const GIST_URL='https://api.github.com/gists/'+GIST_ID;
+const GIST_ID='c75e3776c5e44ef9bee5cb588a47d51d';const GIST_URL='https://api.github.com/gists/'+GIST_ID;
+function getToken(){ return localStorage.getItem('gist_token')||''; }
+function setToken(t){ localStorage.setItem('gist_token',t.trim()); }
 const ROUTES = {
   'ХЮЭ':{commission:9,emoji:'⛩'},'ХОЙАН':{commission:9,emoji:'🏮'},
   'ОСТРОВА ЧАМ':{commission:6,emoji:'🛥'},'ДАНАНГ':{commission:7,emoji:'⛵️'},
@@ -235,8 +237,18 @@ const ROUTE_ALIASES = {
 };
 function normalizeRoute(str){ const s=str.toLowerCase().trim(); for(const [r,a] of Object.entries(ROUTE_ALIASES)){ if(a.some(x=>s.includes(x))) return r; } return str.toUpperCase(); }
 let allBookings=[], currentFilter='upcoming', editingId=null, currentTab='manual';
-window.onload=function(){ loadBookings(); };
-function saveGist(b){return fetch(GIST_URL,{method:"PATCH",headers:{"Authorization":"token "+GIST_TOKEN,"Content-Type":"application/json"},body:JSON.stringify({files:{"bookings.json":{content:JSON.stringify(b)}}})});}
+window.onload=function(){ if(!getToken()){ showTokenPrompt(); } else { loadBookings(); } };
+function saveGist(b){return fetch(GIST_URL,{method:"PATCH",headers:{"Authorization":"token "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({files:{"bookings.json":{content:JSON.stringify(b)}}})});}
+function showTokenPrompt(){
+  document.getElementById('tokenOverlay').style.display='flex';
+}
+function saveTokenAndLoad(){
+  const t=document.getElementById('tokenInput').value.trim();
+  if(!t){ alert('Введи токен'); return; }
+  setToken(t);
+  document.getElementById('tokenOverlay').style.display='none';
+  loadBookings();
+}
 function loadBookings(){
   const cb = 'cb_' + Date.now();
   window[cb] = function(data){ allBookings=data||[]; renderBookings(); updateStats(); delete window[cb]; document.getElementById('jsonp_'+cb) && document.getElementById('jsonp_'+cb).remove(); };
@@ -425,5 +437,13 @@ function formatDateLabel(dateStr){ if(!dateStr||dateStr==='—') return '—'; c
 function formatDate(d){ const months=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек']; const days=['вс','пн','вт','ср','чт','пт','сб']; return d.getDate()+' '+months[d.getMonth()]+' ('+days[d.getDay()]+')'; }
 function pluralBooking(n){ if(n===1) return 'бронь'; if(n>=2&&n<=4) return 'брони'; return 'броней'; }
 </script>
+<div id="tokenOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;padding:32px;border-radius:8px;width:360px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    <div style="font-size:15px;font-weight:700;color:#b5893a;letter-spacing:2px;margin-bottom:8px;">NARADA BOOKINGS</div>
+    <div style="font-size:13px;color:#666;margin-bottom:20px;">Введи GitHub токен с правами <b>gist</b> для загрузки данных.</div>
+    <input id="tokenInput" type="password" placeholder="ghp_..." style="width:100%;padding:10px 12px;border:1px solid #e0ddd5;border-radius:8px;font-size:14px;margin-bottom:16px;box-sizing:border-box;">
+    <button onclick="saveTokenAndLoad()" style="width:100%;padding:10px;background:#b5893a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Войти</button>
+  </div>
+</div>
 </body>
 </html>
