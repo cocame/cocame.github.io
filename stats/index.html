@@ -262,14 +262,28 @@ function renderPages() {
   const list = document.getElementById('pages-list');
   const rows = data.pages || [];
   if (!rows.length) { list.innerHTML = '<div class="empty">Нет данных</div>'; list.classList.remove('loading'); return; }
-  list.classList.remove('loading');
-  list.innerHTML = rows.map((r, i) => {
+
+  // Merge rows with identical pathname
+  const merged = [];
+  const idx = {};
+  for (const r of rows) {
     let path;
     try { path = new URL(r.url).pathname || '/'; } catch { path = r.url; }
-    if (path === '/') path = '/ (главная)';
+    if (path in idx) {
+      merged[idx[path]].visits += r.visits;
+    } else {
+      idx[path] = merged.length;
+      merged.push({ path, visits: r.visits, url: r.url });
+    }
+  }
+  merged.sort((a, b) => b.visits - a.visits);
+
+  list.classList.remove('loading');
+  list.innerHTML = merged.map((r, i) => {
+    const display = r.path === '/' ? '/ (главная)' : r.path;
     return `<div class="page-row">
       <span class="page-num">${i + 1}</span>
-      <span class="page-path" title="${r.url}">${path}</span>
+      <span class="page-path" title="${r.url}">${display}</span>
       <span class="page-visits">${Math.round(r.visits)} визитов</span>
     </div>`;
   }).join('');
