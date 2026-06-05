@@ -1,0 +1,40 @@
+{
+  "updated": "2026-06-05T00:55:45Z",
+  "today": {
+    "visits": 0.0,
+    "users": 0.0,
+    "bounce": 0.0
+  },
+  "week": {
+    "visits": 26.0,
+    "users": 12.0
+  },
+  "month": {
+    "visits": 26.0,
+    "users": 12.0
+  },
+  "sources": [
+    {
+      "name": "Direct traffic",
+      "visits": 24.0
+    },
+    {
+      "name": "Link traffic",
+      "visits": 1.0
+    },
+    {
+      "name": "Search engine traffic",
+      "visits": 1.0
+    }
+  ],
+  "pages": [
+    {
+      "url": "https://narada-travels.com/",
+      "visits": 25.0
+    },
+    {
+      "url": "https://narada-travels.com/?_ym_status-check=109555301&_ym_lang=ru",
+      "visits": 1.0
+    }
+  ]
+}
