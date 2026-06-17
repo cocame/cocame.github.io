@@ -496,39 +496,52 @@ function calcFromVND(vnd_fixed, R) {
 // ЗАГРУЗКА КУРСОВ
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function fetchRates() {
+  const LS_KEY = 'narada_rates_v1';
+
+  function saveCache(rub, vnd) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify({ RUB: rub, VND: vnd, ts: Date.now() })); } catch(_) {}
+  }
+
+  function applyMargin(rub, vnd, ts, label) {
+    const ageDays = (Date.now() - ts) / 86400000;
+    const margin  = ageDays > 3 ? 1.15 : 1.10;
+    console.warn(`⚠️ ВНИМАНИЕ: ${label} Штраф ×${margin} (${Math.round(ageDays)}д назад). Проверьте API!`);
+    return {
+      RUB: rub * margin, VND: vnd * margin, USDT: 1.0,
+      source: `Кэш +${margin === 1.15 ? '15' : '10'}%`,
+      updated: new Date(ts),
+      isFallback: true,
+    };
+  }
+
   // Источник 1: open.er-api.com (без ключа, CORS открыт)
   try {
     const r = await fetch('https://open.er-api.com/v6/latest/USD', { mode: 'cors' });
     const d = await r.json();
-    if (d.result === 'success') return {
-      RUB: d.rates.RUB, VND: d.rates.VND, USDT: 1.0,
-      source: 'ExchangeRate-API',
-      updated: new Date(d.time_last_update_utc),
-    };
+    if (d.result === 'success') {
+      saveCache(d.rates.RUB, d.rates.VND);
+      return { RUB: d.rates.RUB, VND: d.rates.VND, USDT: 1.0, source: 'ExchangeRate-API', updated: new Date(d.time_last_update_utc) };
+    }
   } catch(_) {}
 
   // Источник 2: Frankfurter (ECB, без ключа)
   try {
     const r = await fetch('https://api.frankfurter.dev/v2/latest?base=USD&symbols=RUB,VND', { mode: 'cors' });
     const d = await r.json();
-    if (d.rates) return {
-      RUB: d.rates.RUB, VND: d.rates.VND || 25400, USDT: 1.0,
-      source: 'Frankfurter (ECB)',
-      updated: new Date(d.date),
-    };
+    if (d.rates) {
+      saveCache(d.rates.RUB, d.rates.VND || 26000);
+      return { RUB: d.rates.RUB, VND: d.rates.VND || 26000, USDT: 1.0, source: 'Frankfurter (ECB)', updated: new Date(d.date) };
+    }
   } catch(_) {}
 
-  // Резервные курсы с автоматическим страховочным штрафом
-  const FALLBACK_DATE = new Date('2026-06-17');
-  const ageDays = (Date.now() - FALLBACK_DATE.getTime()) / 86400000;
-  const margin  = ageDays > 3 ? 1.15 : 1.10;
-  console.warn(`⚠️ ВНИМАНИЕ: Сработал резервный курс! Оба API недоступны. Штраф ×${margin} (курс ${Math.round(ageDays)}д назад). Проверьте API!`);
-  return {
-    RUB: 105.0 * margin, VND: 26000 * margin, USDT: 1.0,
-    source: `Резервный +${margin === 1.15 ? '15' : '10'}%`,
-    updated: FALLBACK_DATE,
-    isFallback: true,
-  };
+  // Кэш из localStorage — автоматически актуализируется при каждом успешном запросе
+  try {
+    const c = JSON.parse(localStorage.getItem(LS_KEY));
+    if (c && c.RUB && c.VND) return applyMargin(c.RUB, c.VND, c.ts, 'Оба API недоступны, использую кэш браузера.');
+  } catch(_) {}
+
+  // Аварийный резерв — только если нет ни API, ни кэша (первый запуск на новом устройстве)
+  return applyMargin(105.0, 26000, new Date('2026-06-17').getTime(), 'Нет API и нет кэша! Аварийный резерв.');
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
