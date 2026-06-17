@@ -89,6 +89,7 @@
       background: var(--muted);
     }
     .rate-badge.live .dot { background: #3a9e50; animation: pulse 2s infinite; }
+    .rate-badge.fallback .dot { background: #e67e22; }
     .rate-badge.error .dot { background: #c0392b; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
     #last-updated { color: var(--muted); font-size: 10px; }
@@ -517,11 +518,16 @@ async function fetchRates() {
     };
   } catch(_) {}
 
-  // Резервные курсы (обновляй вручную раз в месяц если оба API недоступны)
+  // Резервные курсы с автоматическим страховочным штрафом
+  const FALLBACK_DATE = new Date('2026-06-17');
+  const ageDays = (Date.now() - FALLBACK_DATE.getTime()) / 86400000;
+  const margin  = ageDays > 3 ? 1.15 : 1.10;
+  console.warn(`⚠️ ВНИМАНИЕ: Сработал резервный курс! Оба API недоступны. Штраф ×${margin} (курс ${Math.round(ageDays)}д назад). Проверьте API!`);
   return {
-    RUB: 82.5, VND: 25400, USDT: 1.0,
-    source: 'Резервные курсы (апрель 2026)',
-    updated: new Date('2026-04-17'),
+    RUB: 105.0 * margin, VND: 26000 * margin, USDT: 1.0,
+    source: `Резервный +${margin === 1.15 ? '15' : '10'}%`,
+    updated: FALLBACK_DATE,
+    isFallback: true,
   };
 }
 
@@ -623,7 +629,7 @@ function updateStatusBar(rates) {
     return;
   }
 
-  badge.className = 'rate-badge live';
+  badge.className = rates.isFallback ? 'rate-badge fallback' : 'rate-badge live';
   txt.textContent = rates.source;
 
   if (rates.updated instanceof Date && !isNaN(rates.updated)) {
