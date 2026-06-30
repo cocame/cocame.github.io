@@ -72,7 +72,7 @@ async function load(){
     const d=await(await fetch('https://open.er-api.com/v6/latest/USD')).json();
     if(d.result==='success'){
       R={RUB:d.rates.RUB,VND:d.rates.VND};
-      document.getElementById('st').textContent='1 USD = '+Math.round(R.RUB*1.15)+' ₽  ·  1 USD = '+Math.round(R.VND*1.03).toLocaleString('ru-RU')+' ₫';
+      document.getElementById('st').textContent='1 USD = '+Math.round(R.RUB*1.15)+' ₽  ·  1 USD = '+Math.round(R.VND*1.06).toLocaleString('ru-RU')+' ₫';
     }
   }catch(e){
     R={RUB:82.5,VND:25400};
@@ -91,7 +91,7 @@ function toU(v,c){
 function conv(usd,isTour,inputCur){
   if(!R)return null;
   const rubRate=isTour&&inputCur!=='RUB'?R.RUB*1.15:R.RUB;
-  const vndRate=isTour&&inputCur!=='VND'?R.VND*1.03:R.VND;
+  const vndRate=isTour&&inputCur!=='VND'?R.VND*1.06:R.VND;
   return{
     usd:Math.ceil(usd),
     rub:ceil(usd*rubRate,100),
@@ -129,7 +129,7 @@ function upRes(id){
   const p=conv(u,it.type==='tour',it.cur);
   const m=it.type==='tour';
   const rubLbl='RUB'+(m&&it.cur!=='RUB'?' +15%':'');
-  const vndLbl='VND'+(m&&it.cur!=='VND'?' +3%':'');
+  const vndLbl='VND'+(m&&it.cur!=='VND'?' +6%':'');
   b.innerHTML=`
     <div class="rr"><span class="rl">USD</span><span class="rv">${p.usd} $</span></div>
     <div class="rr"><span class="rl">${rubLbl}</span><span class="rv">${fR(p.rub)}</span></div>
