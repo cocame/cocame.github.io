@@ -88,14 +88,14 @@ function toU(v,c){
   return +v;
 }
 
-function conv(usd,isTour,inputCur){
+function conv(usd,isTour,inputCur,rawVnd){
   if(!R)return null;
   const rubRate=isTour?R.RUB*1.15:R.RUB;
   const vndRate=isTour?R.VND*1.06:R.VND;
   return{
     usd:Math.ceil(usd),
     rub:ceil(usd*rubRate,100),
-    vnd:ceil(usd*vndRate,100000),
+    vnd:rawVnd?ceil(rawVnd,100000):ceil(usd*vndRate,100000),
     usdt:Math.ceil(usd)
   };
 }
@@ -126,7 +126,8 @@ function upRes(id){
   if(!b||!it||!R)return;
   const u=toU(+it.val||0,it.cur);
   if(!u){b.innerHTML='';return;}
-  const p=conv(u,it.type==='tour',it.cur);
+  const rawVnd=it.cur==='VND'?+it.val:null;
+    const p=conv(u,it.type==='tour',it.cur,rawVnd);
   const m=it.type==='tour';
   const rubLbl='RUB'+(m&&it.cur!=='RUB'?' +15%':'');
   const vndLbl='VND'+(m&&it.cur!=='VND'?' +6%':'');
