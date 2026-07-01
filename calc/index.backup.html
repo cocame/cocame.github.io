@@ -90,8 +90,8 @@ function toU(v,c){
 
 function conv(usd,isTour,inputCur){
   if(!R)return null;
-  const rubRate=isTour&&inputCur!=='RUB'?R.RUB*1.15:R.RUB;
-  const vndRate=isTour&&inputCur!=='VND'?R.VND*1.06:R.VND;
+  const rubRate=isTour?R.RUB*1.15:R.RUB;
+  const vndRate=isTour?R.VND*1.06:R.VND;
   return{
     usd:Math.ceil(usd),
     rub:ceil(usd*rubRate,100),
