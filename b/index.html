@@ -654,7 +654,13 @@ function renderMonthlyReport() {
       gt+=e.amount; gu+=(e.usdAmount||e.amount/usdRate);
     }
   });
-  const sorted=Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+  // Порядок рубрик всегда один — как они объявлены, а не по сумме.
+  // Иначе строки скачут от месяца к месяцу и их приходится искать.
+  const порядок=Object.keys(CATEGORIES);
+  const sorted=Object.entries(totals).sort((a,b)=>{
+    const ia=порядок.indexOf(a[0]), ib=порядок.indexOf(b[0]);
+    return (ia<0?999:ia)-(ib<0?999:ib);
+  });
   if(!sorted.length){document.getElementById('monthlyReport').innerHTML='<div class="empty">Нет данных</div>';return;}
 
   const allMonths=getMonthsList();
