@@ -379,6 +379,10 @@ function closeGuide() {
   document.getElementById('guideModal').classList.remove('open');
 }
 
+// Названия приводим к одному виду: строчные и «ё» → «е».
+// Иначе «Жильё» и «жилье» считаются разными строками в отчёте.
+function normName(s){ return String(s||'').toLowerCase().replace(/ё/g,'е').trim(); }
+
 function onNameInput(val) {
   const q = val.toLowerCase().trim();
   const drop = document.getElementById('autoDrop');
@@ -439,7 +443,7 @@ function checkAddBtn() {
 }
 
 async function addExpense() {
-  const name   = document.getElementById('nameInput').value.trim();
+  const name   = normName(document.getElementById('nameInput').value);
   const amount = parseFloat(document.getElementById('amountInput').value) * 1000;
   if (!name || !amount || !currentCat) return;
 
@@ -642,8 +646,9 @@ function renderProductsReport() {
   expenses.forEach(e=>{
     const d=new Date(e.date);
     if(d>=start&&d<end&&e.category==='Продукты'){
-      totals[e.name]=(totals[e.name]||0)+e.amount;
-      usdTotals[e.name]=(usdTotals[e.name]||0)+(e.usdAmount||e.amount/usdRate);
+      const имя=normName(e.name);
+      totals[имя]=(totals[имя]||0)+e.amount;
+      usdTotals[имя]=(usdTotals[имя]||0)+(e.usdAmount||e.amount/usdRate);
       gt+=e.amount;gu+=(e.usdAmount||e.amount/usdRate);
     }
   });
