@@ -33,6 +33,7 @@ body { min-height:100vh; background:var(--bg); font-family:'Nunito',sans-serif; 
 .sync-dot.loading { background:var(--warn); animation:pulse 1s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 .limits-panel { padding:14px 18px; display:flex; gap:10px; }
+.avg-card { background:#f4f1ea; }
 .limit-card { flex:1; background:var(--card); border-radius:14px; padding:12px 14px; border:1px solid var(--border); }
 .limit-label { font-size:10px; font-weight:800; letter-spacing:1.5px; color:var(--sub); text-transform:uppercase; margin-bottom:4px; }
 .limit-amount { font-family:'Cormorant Garamond',serif; font-size:20px; color:var(--text); font-weight:600; }
@@ -139,6 +140,12 @@ body { min-height:100vh; background:var(--bg); font-family:'Nunito',sans-serif; 
     <div class="limit-amount" id="monthAmount">0 ₫</div>
     <div class="limit-sub">лимит <span id="monthLimitDisplay">15 000 000</span> ₫</div>
     <div class="limit-bar"><div class="limit-fill" id="monthBar" style="width:0%;background:var(--good)"></div></div>
+  </div>
+  <div class="limit-card avg-card">
+    <div class="limit-label">Средний месяц</div>
+    <div class="limit-amount" id="avgAmount">0 ₫</div>
+    <div class="limit-sub" id="avgSub">—</div>
+    <div class="limit-bar"><div class="limit-fill" id="avgBar" style="width:0%;background:var(--sub)"></div></div>
   </div>
 </div>
 
@@ -527,6 +534,18 @@ function renderLimits() {
   };
   setBar('weekAmount','weekBar',wt,weekLimit);
   setBar('monthAmount','monthBar',mt,monthLimit);
+
+  // Средний месяц за всё время — раньше его надо было искать внизу отчёта
+  const мес = getMonthsList();
+  const сумма = expenses.reduce((s,e)=>s+Number(e.amount),0);
+  const среднее = мес.length ? Math.round(сумма/мес.length) : 0;
+  document.getElementById('avgAmount').textContent = среднее.toLocaleString()+' ₫';
+  document.getElementById('avgSub').textContent =
+    мес.length ? 'за '+мес.length+' '+(мес.length===1?'месяц':(мес.length<5?'месяца':'месяцев'))+' · $'+Math.round(среднее/usdRate) : '—';
+  // полоска показывает, как текущий месяц идёт против среднего
+  const доля = среднее ? Math.min(mt/среднее*100,100) : 0;
+  document.getElementById('avgBar').style.cssText =
+    `width:${доля}%;background:${mt>среднее?'var(--warn)':'var(--sub)'}`;
 }
 
 function formatDt(iso) {
