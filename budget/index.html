@@ -547,17 +547,28 @@ function renderLimits() {
   setBar('weekAmount','weekBar',wt,weekLimit);
   setBar('monthAmount','monthBar',mt,monthLimit);
 
-  // Средний месяц за всё время — раньше его надо было искать внизу отчёта
+  // Средний месяц без путешествий: поездки разовые и в отдельные месяцы
+  // съедают до 95 % трат, из-за чего среднее переставало отражать быт.
   const мес = getMonthsList();
-  const сумма = expenses.reduce((s,e)=>s+Number(e.amount),0);
-  const среднее = мес.length ? Math.round(сумма/мес.length) : 0;
+  const бытСумма = expenses.filter(e=>e.category!=='Путешествия')
+                           .reduce((s,e)=>s+Number(e.amount),0);
+  const поездкиСумма = expenses.filter(e=>e.category==='Путешествия')
+                               .reduce((s,e)=>s+Number(e.amount),0);
+  const среднее = мес.length ? Math.round(бытСумма/мес.length) : 0;
+  const срПоездки = мес.length ? Math.round(поездкиСумма/мес.length) : 0;
+  const бытМесяц = expenses.filter(e=>{
+    const d=new Date(e.date);
+    return e.category!=='Путешествия' && d>=monthStart;
+  }).reduce((s,e)=>s+Number(e.amount),0);
+
   document.getElementById('avgAmount').textContent = среднее.toLocaleString()+' ₫';
-  document.getElementById('avgSub').textContent =
-    мес.length ? 'за '+мес.length+' '+(мес.length===1?'месяц':(мес.length<5?'месяца':'месяцев'))+' · $'+Math.round(среднее/usdRate) : '—';
-  // полоска показывает, как текущий месяц идёт против среднего
-  const доля = среднее ? Math.min(mt/среднее*100,100) : 0;
+  document.getElementById('avgSub').innerHTML =
+    мес.length ? 'без поездок · $'+Math.round(среднее/usdRate)+
+      '<br><span style="opacity:.7">поездки ещё '+срПоездки.toLocaleString('ru-RU')+' ₫</span>' : '—';
+  // полоска: текущий месяц без поездок против обычного
+  const доля = среднее ? Math.min(бытМесяц/среднее*100,100) : 0;
   document.getElementById('avgBar').style.cssText =
-    `width:${доля}%;background:${mt>среднее?'var(--warn)':'var(--sub)'}`;
+    `width:${доля}%;background:${бытМесяц>среднее?'var(--warn)':'var(--sub)'}`;
 }
 
 function formatDt(iso) {
