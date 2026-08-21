@@ -163,6 +163,7 @@ body { min-height:100vh; background:var(--bg); font-family:'Nunito',sans-serif; 
     <div class="section-line"></div>
   </div>
   <div class="section-body open" id="history-body">
+    <div class="month-tab-wrap" id="histMonthTabs"></div>
     <div id="historyList"><div class="empty">Загрузка...</div></div>
   </div>
 </div>
@@ -490,6 +491,7 @@ async function confirmDelete() {
 
 function renderAll() {
   renderLimits();
+  renderHistMonthTabs();
   renderHistory();
   renderMonthTabs();
   renderProductMonthTabs();
@@ -533,12 +535,26 @@ function formatDt(iso) {
   return `${days[d.getDay()]} ${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
+// История по месяцам: раньше показывалась только текущая неделя
+let histMonth = null;
+function selectHistMonth(m){ histMonth = m; renderHistMonthTabs(); renderHistory(); }
+function renderHistMonthTabs(){
+  const el = document.getElementById('histMonthTabs'); if(!el) return;
+  const months = getMonthsList();
+  if (!histMonth || !months.includes(histMonth)) histMonth = months[0];
+  el.innerHTML = months.map(m =>
+    `<div class="month-tab${m===histMonth?' active':''}" onclick="selectHistMonth('${m}')">${MONTH_NAMES[parseInt(m.split('-')[1])-1]} ${m.split('-')[0]}</div>`
+  ).join('');
+}
 function renderHistory() {
   const el = document.getElementById('historyList');
-  const weekStart = getWeekStart();
-  const weekExpenses = expenses.filter(e => new Date(e.date) >= weekStart);
-  if (!weekExpenses.length) { el.innerHTML='<div class="empty">На этой неделе расходов нет</div>'; return; }
-  el.innerHTML = weekExpenses.map(e =>
+  const months = getMonthsList();
+  if (!histMonth || !months.includes(histMonth)) histMonth = months[0];
+  const [y,mo] = histMonth.split('-');
+  const start = new Date(+y,+mo-1,1), end = new Date(+y,+mo,1);
+  const list = expenses.filter(e => { const d=new Date(e.date); return d>=start && d<end; });
+  if (!list.length) { el.innerHTML='<div class="empty">В этом месяце расходов нет</div>'; return; }
+  el.innerHTML = list.map(e =>
     `<div class="history-item">
       <div class="history-left">
         <div class="history-name">${CATEGORIES[e.category]?.emoji||''} ${e.name}</div>
