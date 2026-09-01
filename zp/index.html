@@ -55,9 +55,9 @@ body { min-height:100vh; background:var(--bg); font-family:'Nunito',sans-serif; 
 .amount-input::placeholder { color:var(--sub); }
 .amount-input:disabled { opacity:.45; }
 .cur-tag { display:flex; align-items:center; padding:0 16px; background:var(--card2); border:1.5px solid var(--border); border-radius:12px; font-size:15px; font-weight:800; color:var(--accent); min-width:56px; justify-content:center; }
-.note-input { width:100%; margin-top:8px; padding:10px 14px; background:var(--card); border:1.5px solid var(--border); border-radius:12px; color:var(--text); font-family:'Nunito',sans-serif; font-size:13px; outline:none; }
-.note-input:focus { border-color:var(--accent); }
-.note-input::placeholder { color:var(--sub); }
+.date-input { width:100%; margin-top:8px; padding:10px 14px; background:var(--card); border:1.5px solid var(--border); border-radius:12px; color:var(--text); font-family:'Nunito',sans-serif; font-size:13px; outline:none; }
+.date-input:focus { border-color:var(--accent); }
+.date-label { font-size:11px; color:var(--sub); margin-top:10px; }
 .amount-preview { font-size:11px; color:var(--sub); margin-top:5px; min-height:16px; }
 .add-btn { width:100%; margin-top:10px; padding:13px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; color:#fff; font-family:'Nunito',sans-serif; font-size:15px; font-weight:800; cursor:pointer; transition:opacity 0.2s; }
 .add-btn:active { opacity:0.8; }
@@ -86,7 +86,7 @@ body { min-height:100vh; background:var(--bg); font-family:'Nunito',sans-serif; 
 .report-right { text-align:right; }
 .report-amount { font-size:13px; font-weight:700; color:var(--accent); }
 .report-usd { font-size:11px; color:var(--sub); }
-.report-total { display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:var(--card2); border-radius:10px; margin-top:6px; border:1.5px solid var(--accent); }
+.report-total { display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:var(--card2); border-radius:10px; margin-bottom:8px; border:1.5px solid var(--accent); }
 .report-total-label { font-size:12px; font-weight:800; }
 .report-total-amount { font-size:16px; font-weight:900; color:var(--accent); }
 .month-tab-wrap { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
@@ -150,7 +150,8 @@ body { min-height:100vh; background:var(--bg); font-family:'Nunito',sans-serif; 
     <div class="cur-tag" id="curTag">—</div>
   </div>
   <div class="amount-preview" id="amountPreview"></div>
-  <input class="note-input" id="noteInput" type="text" placeholder="Примечание — необязательно" onkeydown="onKeyDown(event)">
+  <div class="date-label">Дата начисления</div>
+  <input class="date-input" id="dateInput" type="date" onkeydown="onKeyDown(event)">
   <button class="add-btn" id="addBtn" onclick="addIncome()" disabled>Добавить — Enter</button>
 </div>
 
@@ -368,24 +369,30 @@ async function addIncome() {
   const cur = SOURCES[currentSrc].cur;
   const amount = val * CUR[cur].step;
 
+  // Дату можно поставить задним числом: забытое вчера начисление должно
+  // попасть в свой месяц, а не в текущий. Полдень — чтобы сдвиг часового
+  // пояса при переводе в ISO не перебросил запись на соседние сутки.
+  const dv = document.getElementById('dateInput').value;
+  const when = dv ? new Date(dv + 'T12:00:00') : new Date();
+
   const rec = {
     id: Date.now(),
-    date: new Date().toISOString(),
+    date: when.toISOString(),
     source: currentSrc,
     cur,
     amount,
     // курс фиксируется в момент записи — прошлые месяцы не поедут
     usdAmount: parseFloat(toUSD(amount, cur, rateRUB, rateVND).toFixed(2)),
     rateRUB, rateVND,
-    note: document.getElementById('noteInput').value.trim(),
+    note: '',
   };
 
   records.unshift(rec);
   document.getElementById('amountInput').value = '';
-  document.getElementById('noteInput').value = '';
+  document.getElementById('dateInput').value = todayISO();
   document.getElementById('amountPreview').textContent = '';
   checkAddBtn();
-  selectedMonth = monthKey(new Date(rec.date));
+  selectedMonth = monthKey(when);
   renderAll();
   await saveRecord(rec);
 }
@@ -413,6 +420,10 @@ async function confirmDelete() {
 }
 
 // ═══ МЕСЯЦЫ ═══
+function todayISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
 function monthKey(d) {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 }
@@ -487,14 +498,18 @@ function renderReport() {
     </div>`;
   });
 
-  el.innerHTML = rows + `<div class="report-total">
+  // Итог идёт первым: при выборе месяца сумма видна сразу под вкладками,
+  // а не после списка позиций, до которого приходилось листать.
+  el.innerHTML = `<div class="report-total">
     <div class="report-total-label">Итого за ${monthName(selectedMonth)}</div>
     <div class="report-total-amount">${fmtUSD(totalUSD)}</div>
-  </div>`;
+  </div>` + rows;
 }
 
 function renderHistory() {
-  const rs = recordsOfMonth(selectedMonth);
+  // Сортировка по дате, а не по порядку добавления: запись задним числом
+  // должна встать на своё место в списке, а не наверх.
+  const rs = recordsOfMonth(selectedMonth).slice().sort((a, b) => new Date(b.date) - new Date(a.date));
   const el = document.getElementById('historyList');
   if (!rs.length) { el.innerHTML = '<div class="empty">Нет записей за этот месяц</div>'; return; }
   el.innerHTML = rs.map(r => {
@@ -542,6 +557,7 @@ function updateHeaderDate() {
 
 async function init() {
   updateHeaderDate();
+  document.getElementById('dateInput').value = todayISO();
   renderSources();
   await Promise.all([loadRecords(), loadRates()]);
   renderAll();
